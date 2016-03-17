@@ -33,6 +33,34 @@ def openfile(read_function):
     return wrapped_function
 
 
+def convert_to_gpa(C, units):
+    """Convert the elastic constants in C to GPa from specified units"""
+    units = units.lower()
+    if units == "gpa":
+        pass
+    elif units == "pa":
+        C = C / 1.0E9
+    elif units == "mbar":
+        C = C * 100.0
+    elif units == "bar":
+        C = C / 10.0E3
+    else:
+        raise ValueError("Elasticity unit not recognised")
+    return C
+
+
+def convert_to_kgm3(rho, units):
+    """Convert the density to Kg/m^3 from specified units"""
+    units = units.lower()
+    if units == "kgm3":
+        pass
+    elif units == "gcc":
+        rho = rho * 1.0E3
+    else:
+        raise ValueError("Density unit not recognised")
+    return rho
+
+
 @openfile
 def load_ematrix(fh):
     """Load an 'ematrix' file"""
@@ -47,7 +75,7 @@ def load_ematrix(fh):
                 Cout[i-3, j] = float(cijstr[j])
 
     # Units are Mbar - convert to GPa!
-    Cout = Cout * 100.0
+    Cout = convert_to_gpa(Cout, "Mbar")
 
     return Cout
             
