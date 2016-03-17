@@ -32,6 +32,16 @@ class PytasaIOTestCase(unittest.TestCase):
                                         "test_MS_load_ematrix.txt"))
        np.testing.assert_almost_equal(olivine_cij_voigt, C_input)
 
+    def test_load_Aij_gz(self):
+       C_input = pytasa.io.load_ematrix(os.path.join(DATA,
+                                        "test_MS_load_ematrix.txt.gz"))
+       np.testing.assert_almost_equal(olivine_cij_voigt, C_input)
+
+    def test_load_Aij_fh(self):
+       with open(os.path.join(DATA, "test_MS_load_ematrix.txt")) as f:
+           C_input = pytasa.io.load_ematrix(f)
+       np.testing.assert_almost_equal(olivine_cij_voigt, C_input)
+
 def suite():
     return unittest.makeSuite(PytasaIOTestCase, 'test')
 
