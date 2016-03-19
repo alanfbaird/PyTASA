@@ -42,6 +42,21 @@ class PytasaIOTestCase(unittest.TestCase):
            C_input = pytasa.io.load_ematrix(f)
        np.testing.assert_almost_equal(olivine_cij_voigt, C_input)
 
+    def test_load_msat_simple_file(self):
+       C_input = pytasa.io.load_mast_simple(os.path.join(DATA, 
+                                            "test_MS_load_default.txt"))
+       np.testing.assert_almost_equal(olivine_cij_voigt, C_input)
+
+    def test_load_msat_simple_fh(self):
+       with open(os.path.join(DATA, "test_MS_load_default.txt")) as f:
+           C_input = pytasa.io.load_mast_simple(f)
+       np.testing.assert_almost_equal(olivine_cij_voigt, C_input)
+
+    def test_load_msat_simple_file_gz(self):
+       C_input = pytasa.io.load_mast_simple(os.path.join(DATA, 
+                                            "test_MS_load_default.txt.gz"))
+       np.testing.assert_almost_equal(olivine_cij_voigt, C_input)
+
 def suite():
     return unittest.makeSuite(PytasaIOTestCase, 'test')
 

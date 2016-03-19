@@ -10,6 +10,9 @@ import gzip
 import numpy as np
 
 
+class PytasaIOError(Exception):
+    pass
+
 def openfile(read_function):
     """Decorator to read data from files or file like instances.
 
@@ -78,4 +81,44 @@ def load_ematrix(fh):
     Cout = convert_to_gpa(Cout, "Mbar")
 
     return Cout
-            
+
+
+@openfile
+def load_mast_simple(fh):
+    """Load a MSAT 'simple' file"""
+    c_seen = np.zeros((6,6),dtype=bool)
+    c_out = np.zeros((6,6))
+    rho_seen = False
+    rho = None
+
+    for i, line in enumerate(fh):
+        # Strip comments and empty lines
+        line = line.split('%')[0].strip()
+        vals = line.split()
+        if len(vals)!=0:
+            if len(vals)!=3:
+                raise PytasaIOError("Invalid format on line {}".format(i+1))
+            try:
+                ii = int(vals[0])
+                jj = int(vals[1])
+                cc = float(vals[2])
+            except ValueError:
+                raise PytasaIOError("Value not parsed on line {}".format(i+1))
+            if (ii >= 1 and ii <= 6) and (jj >= 1 and jj <= 6):
+                # A Cij value
+                if (not c_seen[ii-1,jj-1]) and (not c_seen[jj-1,ii-1]):
+                    c_out[ii-1, jj-1] = cc
+                    c_seen[ii-1,jj-1] = True
+                    c_out[jj-1, ii-1] = cc
+                    c_seen[jj-1,ii-1] = True
+                else:
+                    raise PytasaIOError("Double specified value on line {}".format(i+1))
+            else:
+                if not rho_seen:
+                    rho = cc
+                    rho_seen = True
+                else:
+                    raise PytasaIOError("Double specified value on line {}".format(i))
+
+    return c_out
+             
