@@ -25,7 +25,7 @@ def openfile(read_function):
     def wrapped_function(f):
         if isinstance(f, str):
             if os.path.splitext(f)[1] == '.gz':
-                with gzip.open(f, 'rb') as f:
+                with gzip.open(f, 'rt') as f:
                     return read_function(f)
             else:
                 with open(f, 'r') as f:
@@ -92,9 +92,8 @@ def load_mast_simple(fh):
     rho = None
 
     for i, line in enumerate(fh):
-        # Strip comments and empty lines
-        line = line.split('%')[0].strip()
-        vals = line.split()
+        # Strip comments and empty lines and chop up
+        vals = line.split('%')[0].strip().split()
         if len(vals)!=0:
             if len(vals)!=3:
                 raise PytasaIOError("Invalid format on line {}".format(i+1))
