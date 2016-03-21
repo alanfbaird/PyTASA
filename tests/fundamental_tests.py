@@ -32,6 +32,7 @@ class PytasaFundamentalTestCase(unittest.TestCase):
         np.testing.assert_almost_equal(avs,0.0)
         np.testing.assert_almost_equal(vp-13.5,0.0)
         np.testing.assert_almost_equal(vs1-7.7,0.0)
+        np.testing.assert_almost_equal(pol,np.nan)
         
         
     
