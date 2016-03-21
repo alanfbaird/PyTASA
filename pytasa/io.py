@@ -161,4 +161,76 @@ def load_mast_simple(fh, eunit="GPa", dunit="Kgm3", dnorm=False):
     rho = convert_to_kgm3(rho, dunit) 
 
     return c_out, rho
+
+
+def expand_cubic(c11,c44,c12):
+    """docstring for expand_cubic"""
+    
+    C = np.array([[ c11, c12, c12, 0.0, 0.0, 0.0], 
+                  [ c12, c11, c12, 0.0, 0.0, 0.0], 
+                  [ c12, c12, c11, 0.0, 0.0, 0.0],
+                  [ 0.0, 0.0, 0.0, c44, 0.0, 0.0],
+                  [ 0.0, 0.0, 0.0, 0.0, c44, 0.0],
+                  [ 0.0, 0.0, 0.0, 0.0, 0.0, c44]])
+    
+    return C
+    
+def expand_hexagonal(c11,c33,c44,c12,c13):
+    """docstring for expand_hexagonal"""
+    
+    c66=(c11-c12)/2.
+    
+    C = np.array([[ c11, c12, c13, 0.0, 0.0, 0.0], 
+                  [ c12, c11, c13, 0.0, 0.0, 0.0], 
+                  [ c13, c13, c33, 0.0, 0.0, 0.0],
+                  [ 0.0, 0.0, 0.0, c44, 0.0, 0.0],
+                  [ 0.0, 0.0, 0.0, 0.0, c44, 0.0],
+                  [ 0.0, 0.0, 0.0, 0.0, 0.0, c66]])
+    
+    return C
+
+def expand_trigonal(c11,c33,c44,c12,c13,c14,c15=0.0):
+    """docstring for expand_trigonal"""
+    
+    c66=(c11-c12)/2.
+    
+    C = np.array([[ c11, c12, c13, c14, c15, 0.0], 
+                  [ c12, c11, c13,-c14,-c15, 0.0], 
+                  [ c13, c13, c33, 0.0, 0.0, 0.0],
+                  [ c14,-c14, 0.0, c44, 0.0,-c15],
+                  [ c15,-c15, 0.0, 0.0, c44, c14],
+                  [ 0.0, 0.0, 0.0,-c15, c14, c66]])
+    return C
+
+def expand_orthorhombic(c11,c22,c33,c44,c55,c66,c12,c13,c23):
+    """docstring for expand_orthorhombic"""
+    C = np.array([[ c11, c12, c13, 0.0, 0.0, 0.0], 
+                  [ c12, c22, c23, 0.0, 0.0, 0.0], 
+                  [ c13, c23, c33, 0.0, 0.0, 0.0],
+                  [ 0.0, 0.0, 0.0, c44, 0.0, 0.0],
+                  [ 0.0, 0.0, 0.0, 0.0, c55, 0.0],
+                  [ 0.0, 0.0, 0.0, 0.0, 0.0, c66]])
+    return C
+
+def expand_tetragonal(c11,c33,c44,c66,c12,c13,c16=0.0):
+    """docstring for expand_tetragonal"""
+    C = np.array([[ c11, c12, c13, 0.0, 0.0, c16], 
+                  [ c12, c11, c13, 0.0, 0.0,-c16], 
+                  [ c13, c13, c33, 0.0, 0.0, 0.0],
+                  [ 0.0, 0.0, 0.0, c44, 0.0, 0.0],
+                  [ 0.0, 0.0, 0.0, 0.0, c44, 0.0],
+                  [ c16,-c16, 0.0, 0.0, 0.0, c66]])
+    return C
+
+def expand_monoclinic(c11,c22,c33,c44,c55,c66,c12,c13,c23,c15,c25,c35,c46):
+    """docstring for expand_monoclinic"""
+    C = np.array([[ c11, c12, c13, 0.0, c15, 0.0], 
+                  [ c12, c22, c23, 0.0, c25, 0.0], 
+                  [ c13, c23, c33, 0.0, c35, 0.0],
+                  [ 0.0, 0.0, 0.0, c44, 0.0, c46],
+                  [ c15, c25, c35, 0.0, c55, 0.0],
+                  [ 0.0, 0.0, 0.0, c46, 0.0, c66]])
+    return C
+
+
              
