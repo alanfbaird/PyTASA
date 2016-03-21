@@ -94,11 +94,13 @@ def V_rot_bet(V,bet):
     return VR
 
 
-def phasevels(C,rh,incl,azim):
+def phasevels(Cin,rh,incl,azim):
     """docstring for PS_phasevels"""
     
+    #copy C to avoid mutating input
+    C=Cin.copy()
+    
     #Convert inc and azi to arrays of at least 1 dimension otherwise can't iterate over scalars
-    #C=Cin
     #rh=rho
     inc=np.atleast_1d(incl)
     azi=np.atleast_1d(azim)
@@ -176,13 +178,13 @@ def phasevels(C,rh,incl,azim):
         pol[ipair] = ph
 
 
-    ## If any directions have zero avs (within machine accuracy)
-    ## set pol to np.nan - array wise:
-    #isiso = float(avs > np.sqrt(np.spacing(1))) # list of 1.0 and 0.0.
-    #pol = pol * (isiso/isiso) # times by 1.0 or np.nan. 
-    #
-    #S1P[:,0] = S1P[:,0] * (isiso/isiso);
-    #S1P[:,1] = S1P[:,1] * (isiso/isiso);
-    #S1P[:,2] = S1P[:,2] * (isiso/isiso);
+    # If any directions have zero avs (within machine accuracy)
+    # set pol to np.nan - array wise:
+    isiso = (avs > np.sqrt(np.spacing(1))).astype(float) # list of 1.0 and 0.0.
+    pol = pol * np.divide(isiso,isiso) # times by 1.0 or np.nan. 
+    
+    S1P[:,0] = S1P[:,0] * np.divide(isiso,isiso)
+    S1P[:,1] = S1P[:,1] * np.divide(isiso,isiso)
+    S1P[:,2] = S1P[:,2] * np.divide(isiso,isiso)
     
     return pol,avs,vs1,vs2,vp,S1P,S2P
