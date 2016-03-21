@@ -105,11 +105,11 @@ def load_ematrix(fh, eunit="Mbar"):
 def load_mast_simple(fh, eunit="GPa", dunit="Kgm3", dnorm=False):
     """Load a MSAT 'simple' file
 
-    This file format consists of a serise of lines, each with two integers and a float,
+    This file format consists of a series of lines, each with two integers and a float,
     the integers represent the indicies of the elastic constant (in Voigt notation) and
-    the float is it's value. Major and minor symmetry is assumed and only one of each 
+    the float is its value. Major and minor symmetry is assumed and only one of each 
     pair of off diagonal elements can be provided. Elements outside the range i=(1,6),
-    j=(1,6) are assumed to be the density. Only one desnity can be present. Empty
+    j=(1,6) are assumed to be the density. Only one density can be present. Empty
     lines are ignored and the characters after the comment symbol '%' are removed 
     prior to reading. Any other characters result in an error. 
 
@@ -310,8 +310,8 @@ def build_iso(**kwargs):
     
     M = 2*mu+lam
     E = (mu*((3*lam)+(2*mu)))/(lam+mu)
-    K = lam + (2/3)*mu;
-    nu = lam/(2*(lam+mu));
+    K = lam + (2/3)*mu
+    nu = lam/(2*(lam+mu))
     
 
     C = np.array([[  M, lam, lam, 0.0, 0.0, 0.0],
