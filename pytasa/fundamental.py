@@ -333,3 +333,94 @@ def groupvels(Cin,rh,incl,azim,slowout=False):
     else:
         return VGP, VGS1, VGS2, PE, S1E, S2E
     
+# FIXME: this is a good place to put things like phase velocity 
+#        calculation or tensor rotation. Basic rule should be that
+#        the functions take a 6x6 np. array (or matrix?) as input
+#        and return something. We can then build an OO interface on top
+
+def cij_stability(cij):
+    """Check that the elastic constants matrix is positive
+    definite - i.e. that the structure is stable to small
+    strains. This is done by finding the eigenvalues by
+    diagonalization and checking that they are all positive.
+    See Born & Huang, "Dynamical Theory of Crystal Lattices"
+    (1954) page 141."""
+
+    stable = False
+    (eigenvalues, eigenvectors) = np.linalg.eig(cij)
+    if (np.amin(eigenvalues) > 0.0):
+        stable = True
+    else:
+        print "Crystal not stable to small strains"
+        print "(Cij not positive definite)"
+        print "Eigenvalues: " + str(eigenvalues)
+
+    return stable
+
+
+def invert_cij(cij, ecij):
+    """Given a square matrix and a square matrix of the errors
+    on each element, return the inverse of the matrix and the
+    propogated errors on the inverse.
+
+    We use numpy for the inversion and eq.10 of Lefebvre,
+    Keeler, Sobie and White ('Propagation of errors for
+    matrix inversion' Nuclear Instruments and Methods in
+    Physics Research A 451 pp.520-528; 2000) to calculate
+    the errors. The errors can be reported directly as the
+    errors on the inverse matrix but to do useful further
+    propogation we need to report the covar matrix too.
+    This is calculated from eq.9 and we then extract the
+    diagonal elements to get the errors (rather than implementing
+    eq.10 too).
+
+    Tested with the matrix:
+            0.700(7) 0.200(2)
+            0.400(4) 0.600(6)
+    which gives back the inverse and squared errors reported
+    in Table 1 of the above reference.
+
+    This is coded up for an elastic constants matrix (cij) and
+    its inverse (the elastic compliance matrix, cij), but should
+    work for any rank 2 square matrix.
+    """
+
+    # Assuming we have a rank 2 square array
+    # of the same size for input array.
+    if (np.ndim(cij) != 2):
+        raise ValueError, "Matrix must be rank 2"
+    if (np.shape(cij)[0] != np.shape(cij)[1]):
+        raise ValueError, "Matrix must be square"
+    if (np.shape(cij) != np.shape(ecij)):
+        raise ValueError, "Matrix and error matrix must have same shape"
+
+    # Calculate the inverse using numpy
+    sij = np.linalg.inv(cij)
+
+    # Set up output arrays (init as zeros)
+    esij = np.zeros_like(ecij)
+    array_size = esij[0].size
+    vcovsij = np.zeros((array_size,array_size,array_size,array_size),
+                       dtype=type(esij))
+
+    # Build covariance arrays (i.e COV(C^-1[a,b],S^-1[b,c] - a 4d array).
+    # This is an implementation of eq.9 of Lefebvre et al.
+    for a in range (array_size):
+        for b in range (array_size):
+            for c in range (array_size):
+                for d in range (array_size):
+                    for i in range (array_size):
+                        for j in range (array_size):
+                            vcovsij[a,b,c,d] = vcovsij[a,b,c,d] + \
+                             ((sij[a,i]*sij[c,i]) * (ecij[i,j]**2) * \
+                              (sij[j,b]*sij[j,d]))
+
+    # Extrct the "diagonal" terms, which are
+    # the errors on the elements of the inverse
+    # and could also be calculated using eq.10
+    for a in range (array_size):
+        for b in range (array_size):
+            esij[a,b] = np.sqrt(vcovsij[a,b,a,b])
+
+    return (sij, esij, vcovsij)
+

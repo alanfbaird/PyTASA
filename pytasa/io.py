@@ -394,3 +394,31 @@ def build_iso(**kwargs):
 
 
              
+def latexCij(Cij, outputfile, eCij=np.zeros((6,6)),  nt=False):
+    """Write out elastic constants and derived properties in a format
+    that can be processed as a LaTeX table."""
+
+    nt_string = "& {0:5.1f}$\pm${1:3.1f}  \n"
+    wt_string = "c$_{{{0}{1}}}$ & {2:5.1f}$\pm${3:3.1f} \\\\ \n"
+
+    with open(outputfile,"w") as f:
+        for i in range(6):
+            for j in range(i,6):
+                if ((Cij[i,j] != 0.0) and (eCij[i,j] != 0.0)):
+                    if (nt):
+                        f.write(nt_string.format(Cij[i,j],eCij[i,j]))
+                    else:
+                        f.write(wt_string.format(i+1,j+1,Cij[i,j],eCij[i,j]))
+
+
+def txtCij(Cij, filename):
+    """Add elastic constants to a text file as a single line
+    (e.g. for bulk plotting). Order of elastic constants is:
+    C11 C12 C13 ... C16 C22 ... C26 C33 ... C55 C56 C66"""
+
+    with open(filename, "a") as f:
+        for i in range(6):
+            for j in range(i,6):
+                f.write("{0:5.1f} ".format(Cij[i,j]))
+            f.write("\n")
+
