@@ -389,11 +389,11 @@ def invert_cij(cij, ecij):
     # Assuming we have a rank 2 square array
     # of the same size for input array.
     if (np.ndim(cij) != 2):
-        raise ValueError, "Matrix must be rank 2"
+        raise ValueError("Matrix must be rank 2")
     if (np.shape(cij)[0] != np.shape(cij)[1]):
-        raise ValueError, "Matrix must be square"
+        raise ValueError("Matrix must be square")
     if (np.shape(cij) != np.shape(ecij)):
-        raise ValueError, "Matrix and error matrix must have same shape"
+        raise ValueError("Matrix and error matrix must have same shape")
 
     # Calculate the inverse using numpy
     sij = np.linalg.inv(cij)
