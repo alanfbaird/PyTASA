@@ -50,7 +50,7 @@ class PytasaFundamentalTestCase(unittest.TestCase):
         
     
     def test_phasevels_stishovite_list(self):
-        """docstring for test_phasevels_stishovite_list"""
+        
         pol,avs,vs1,vs2,vp,S1P,S2P = pytasa.fundamental.phasevels(stishovite_cij, stishovite_rho, [90,90,90], [0,0,0])
         
         np.testing.assert_array_almost_equal(vs1,vs2)
@@ -58,10 +58,22 @@ class PytasaFundamentalTestCase(unittest.TestCase):
         np.testing.assert_allclose(vp,[13.5,13.5,13.5],atol=0.5)
         np.testing.assert_allclose(vs1,[7.7,7.7,7.7],atol=0.5)
         
+    
+    def test_phasevels_stishovite_errors(self):
         
+        with self.assertRaises(ValueError):
+            pytasa.fundamental.phasevels(stishovite_cij, stishovite_rho, [90,90,90], [0,0])
+            pytasa.fundamental.phasevels(stishovite_cij, stishovite_rho, [90,90], [0,0,0])
         
-        
-    pass
+     
+     
+    # Not implemented   
+    #def test_phasevels_Cinvalid(self):
+    #    
+    #    C = stishovite_cij.copy()
+    #    C[2,5]=-675.0
+    #    self.assertRaises(ValueError,pytasa.fundamental.phasevels(C, stishovite_rho, [90,90], [0,0]))
+    #
 
         
         

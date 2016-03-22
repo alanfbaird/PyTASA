@@ -180,11 +180,13 @@ def phasevels(Cin,rh,incl,azim):
 
     # If any directions have zero avs (within machine accuracy)
     # set pol to np.nan - array wise:
-    isiso = (avs > np.sqrt(np.spacing(1))).astype(float) # list of 1.0 and 0.0.
-    pol = pol * np.divide(isiso,isiso) # times by 1.0 or np.nan. 
-    
-    S1P[:,0] = S1P[:,0] * np.divide(isiso,isiso)
-    S1P[:,1] = S1P[:,1] * np.divide(isiso,isiso)
-    S1P[:,2] = S1P[:,2] * np.divide(isiso,isiso)
+    # make sure invalid error warnings are suppressed.
+    with np.errstate(invalid='ignore'):
+        isiso = (avs > np.sqrt(np.spacing(1))).astype(float) # list of 1.0 and 0.0.
+        pol = pol * np.divide(isiso,isiso) # times by 1.0 or np.nan. 
+        
+        S1P[:,0] = S1P[:,0] * np.divide(isiso,isiso)
+        S1P[:,1] = S1P[:,1] * np.divide(isiso,isiso)
+        S1P[:,2] = S1P[:,2] * np.divide(isiso,isiso)
     
     return pol,avs,vs1,vs2,vp,S1P,S2P
