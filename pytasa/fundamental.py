@@ -5,6 +5,7 @@ pytasa.fundamental - basic operations with elastic constant matrices
 This module provides functions that operate on single elastic constant
 matrices represented as 6x6 numpy arrays (Voigt notation). 
 """
+from __future__ import print_function
 
 import numpy as np
 
@@ -351,9 +352,9 @@ def cij_stability(cij):
     if (np.amin(eigenvalues) > 0.0):
         stable = True
     else:
-        print "Crystal not stable to small strains"
-        print "(Cij not positive definite)"
-        print "Eigenvalues: " + str(eigenvalues)
+        print("Crystal not stable to small strains")
+        print("(Cij not positive definite)")
+        print("Eigenvalues: " + str(eigenvalues))
 
     return stable
 
