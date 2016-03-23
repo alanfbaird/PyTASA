@@ -6,6 +6,7 @@ pytasa.polycrystal - functions to deal with polycrystals
 
 import numpy as np
 
+from .fundamental import invert_cij
 
 def isotropic_limits(Cij, eCij=np.zeros((6,6))):
     """Returns voight-reuss-hill average of elastic constants tensor
@@ -16,7 +17,7 @@ def isotropic_limits(Cij, eCij=np.zeros((6,6))):
     matrix."""
 
     # Need compliances too:
-    (sij, eSij, covSij) = invertCij(Cij, eCij)
+    (sij, eSij, covSij) = invert_cij(Cij, eCij)
 
     # These equations are valid for all crystal systems (only 9 of
     # the 21 elastic constants ever have to be used, e.g. see Anderson

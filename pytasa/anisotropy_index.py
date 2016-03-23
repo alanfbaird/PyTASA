@@ -8,6 +8,8 @@ anisotropy.
 
 import numpy as np
 
+from .polycrystal import isotropic_limits
+
 
 def zenerAniso(Cij,eCij=np.zeros((6,6))):
     """Returns Zener anisotropy index, A, defined as
@@ -24,12 +26,12 @@ def zenerAniso(Cij,eCij=np.zeros((6,6))):
     return (zA, ezA)
 
 
-def uAniso(Cij,eCij):
+def uAniso(Cij,eCij=np.zeros((6,6))):
     """Returns the Universal elastic anisotropy index defined
     by Ranganathan and Ostoja-Starzewski (PRL 101, 05504; 2008
     doi:10.1103/PhysRevLett.101.055504 ). Valid for all systems."""
     (voigtB, reussB, voigtG, reussG, hillB, hillG,
-                       evB, erB, evG, erG, ehB, ehG) = polyCij(Cij,eCij)
+                       evB, erB, evG, erG, ehB, ehG) = isotropic_limits(Cij,eCij)
     uA = (5*(voigtG/reussG))+(voigtB/reussB)-6
     euA = np.sqrt((np.sqrt((evG/voigtG)**2 +\
                   (erG/reussG)**2)*(voigtG/reussG))**2 + \
