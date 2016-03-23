@@ -92,10 +92,95 @@ def V_rot_bet(V,bet):
     RR = [ [np.cos(b), 0, -np.sin(b)] , [0, 1, 0], [np.sin(b), 0, np.cos(b)]] 
     VR = np.dot(V,RR) 
     return VR
+    
+    
+def rayvel(C,SN,rho):
+    """
+    TO CALCULATE THE RAY-VELOCITY VECTOR CORRESPONDING TO A SLOWNESS VECTOR.
+    Original fortran by David Mainprice as part of the EMATRIX code.
+    Converted to Python by Alan Baird
+    
+    C: Stiffness tensor in Voigt Notation (6X6).
+    SN: Slowness vector (3).
+    rho: Density
+    
+    returns VG: Group velocity vector (3)
+    
+    
+    """
+    
+    ijkl = np.array([[0,5,4],
+                     [5,1,3],
+                     [4,3,2]])
+    
+    
+    # F[I,K]: COMPONENTS OF DETERMINANT IN TERMS OF COMPONENTS OF THE SLOWNESS VECTOR
+
+    # F = np.zeros((3,3))
+    # for i in range(3):
+    #     for k in range(3):
+    #         F[i,k]=0.0
+    #         for j in range(3):
+    #             for l in range(3):
+    #                 m=ijkl[i,j]
+    #                 n=ijkl[k,l]
+    #                 F[i,k]=F[i,k]+C[m,n]*SN[j]*SN[l]
+    #         if i==k:
+    #             F[i,k]=F[i,k]-rho
+    
+    gamma = np.array([[ SN[0],   0.0,   0.0,   0.0, SN[2], SN[1]],
+                      [   0.0, SN[1],   0.0, SN[2],   0.0, SN[0]],
+                      [   0.0,   0.0, SN[2], SN[1], SN[0],  0.0]])
+    F = np.dot(np.dot(gamma,C),np.transpose(gamma))-np.identity(3)*rho
+    
+    
+    
+    # Signed cofactors of F[i,k]
+    CF = np.zeros((3,3))
+    
+    CF[0,0]=F[1,1]*F[2,2]-F[1,2]**2
+    CF[1,1]=F[0,0]*F[2,2]-F[0,2]**2
+    CF[2,2]=F[0,0]*F[1,1]-F[0,1]**2
+    CF[0,1]=F[1,2]*F[2,0]-F[1,0]*F[2,2]
+    CF[1,0]=CF[0,1]
+    CF[1,2]=F[2,0]*F[0,1]-F[2,1]*F[0,0]
+    CF[2,1]=CF[1,2]
+    CF[2,0]=F[0,1]*F[1,2]-F[0,2]*F[1,1]
+    CF[0,2]=CF[2,0]
+    
+    # Derivatives of determinant elements
+    DF = np.zeros((3,3,3))
+    for i in range(3):
+        for j in range(3):
+            for k in range(3):
+                DF[i,j,k]=0.0
+                for l in range(3):
+                    
+                    DF[i,j,k] = DF[i,j,k] + (C[ijkl[i,j],ijkl[k,l]] + C[ijkl[k,j],ijkl[i,l]]) * SN[l]
+                    
+    # Components of gradient
+    DFD = np.zeros(3)
+    for k in range(3):
+        DFD[k]=0.0
+        for i in range(3):
+            for j in range(3):
+                DFD[k]=DFD[k]+DF[i,j,k]*CF[i,j]
+                
+    # Normalize to obtain group velocity
+    denom = 0.0
+    VG = np.zeros(3)
+    for i in range(3):
+        denom=denom+SN[i]*DFD[i]
+    for i in range(3):
+        VG[i]=DFD[i]/denom
+                
+            
+    return VG
+    
 
 
-def phasevels(Cin,rh,incl,azim):
-    """docstring for PS_phasevels"""
+def phasevels(Cin,rh,incl,azim,polout=False):
+    """docstring for phasevels"""
     
     #copy C to avoid mutating input
     C=Cin.copy()
@@ -125,9 +210,16 @@ def phasevels(Cin,rh,incl,azim):
     vs1 = np.zeros(np.size(azi))
     vs2 = np.zeros(np.size(azi))
     pol = np.zeros(np.size(azi))
-    S1  = np.zeros((np.size(azi),3)) 
     S1P = np.zeros((np.size(azi),3)) 
     S2P = np.zeros((np.size(azi),3)) 
+    
+    # Eigenvectors
+    PE  = np.zeros((np.size(azi),3)) 
+    S1E = np.zeros((np.size(azi),3)) 
+    S2E = np.zeros((np.size(azi),3)) 
+    
+    # Cartesion propagation vectors
+    XIS = np.zeros((np.size(azi),3)) 
 
     #start looping
     for ipair in range(np.size(inc)):
@@ -136,6 +228,7 @@ def phasevels(Cin,rh,incl,azim):
 
         # create the cartesian vector
     	XI = cart2(cinc,cazi)
+        XIS[ipair,:] = XI
 
         # Compute phase velocities		
     	V,EIGVEC=velo(XI,rh,C)
@@ -145,6 +238,10 @@ def phasevels(Cin,rh,incl,azim):
         P  = EIGVEC[:,0]
         S1 = EIGVEC[:,1]
         S2 = EIGVEC[:,2]
+        
+        PE[ipair,:]  = P
+        S1E[ipair,:] = S1
+        S2E[ipair,:] = S2
 
           
         # calculate projection onto propagation plane      
@@ -189,4 +286,61 @@ def phasevels(Cin,rh,incl,azim):
         S1P[:,1] = S1P[:,1] * np.divide(isiso,isiso)
         S1P[:,2] = S1P[:,2] * np.divide(isiso,isiso)
     
-    return pol,avs,vs1,vs2,vp,S1P,S2P
+    
+    if polout:
+        return pol,avs,vs1,vs2,vp,S1P,S2P,PE,S1E,S2E,XIS        
+    else:
+        return pol,avs,vs1,vs2,vp,S1P,S2P
+
+
+def groupvels(Cin,rh,incl,azim,slowout=False):
+    """Calculate the group velocity details for an elsticity matrix."""
+    
+    #copy C to avoid mutating input
+    C=Cin.copy()
+    
+    
+    #Convert inc and azi to arrays of at least 1 dimension otherwise can't iterate over scalars
+    inc=np.atleast_1d(incl)
+    azi=np.atleast_1d(azim)
+    
+    if (np.size(inc)!=np.size(azi)):
+        raise ValueError("AZI and INC must be scalars or vectors of the same dimension")
+        
+
+    isotol = np.sqrt(np.spacing(1)); # Mbars
+    
+    pol,avs,vs1,vs2,vp,S1P,S2P,PE,S1E,S2E,XIS = phasevels(Cin,rh,inc,azi,polout=True)
+    
+    
+    # Slowness vectors
+    SNP  = np.zeros((np.size(azi),3)) 
+    SNS1 = np.zeros((np.size(azi),3)) 
+    SNS2 = np.zeros((np.size(azi),3))
+
+    # Group velocity vectors
+    VGP  = np.zeros((np.size(azi),3)) 
+    VGS1 = np.zeros((np.size(azi),3)) 
+    VGS2 = np.zeros((np.size(azi),3))
+    
+
+    #start looping
+    for ipair in range(np.size(inc)):
+
+        
+        # Slowness vectors
+        SNP[ipair,:] = XIS[ipair,:]/vp[ipair]
+        SNS1[ipair,:] = XIS[ipair,:]/vs1[ipair]
+        SNS2[ipair,:] = XIS[ipair,:]/vs2[ipair]
+        
+        # Group velocity vectors (need to convert density back first)
+        VGP[ipair,:]  = rayvel(C,SNP[ipair,:],rh/1e3)
+        VGS1[ipair,:] = rayvel(C,SNS1[ipair,:],rh/1e3)
+        VGS2[ipair,:] = rayvel(C,SNS2[ipair,:],rh/1e3)
+        
+
+    if slowout:
+        return VGP, VGS1, VGS2, PE, S1E, S2E, SNP, SNS1, SNS2
+    else:
+        return VGP, VGS1, VGS2, PE, S1E, S2E,
+    
