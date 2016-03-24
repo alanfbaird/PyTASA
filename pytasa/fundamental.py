@@ -94,7 +94,7 @@ def V_rot_bet(V,bet):
     return VR
     
     
-def rayvel(C,SN,rho):
+def rayvel_old(C,SN,rho):
     """
     TO CALCULATE THE RAY-VELOCITY VECTOR CORRESPONDING TO A SLOWNESS VECTOR.
     Original fortran by David Mainprice as part of the EMATRIX code.
@@ -177,7 +177,73 @@ def rayvel(C,SN,rho):
             
     return VG
     
+def rayvel(Cin,SN,rho):
+    """
+    TO CALCULATE THE RAY-VELOCITY VECTOR CORRESPONDING TO A SLOWNESS VECTOR.
+    Original fortran by David Mainprice as part of the EMATRIX code.
+    Converted to Python by Alan Baird
+    
+    C: Stiffness tensor in Voigt Notation (6X6).
+    SN: Slowness vector (3).
+    rho: Density
+    
+    returns VG: Group velocity vector (3)
+    
+    
+    """
+    
+    C = Cin/rho
+    
+    
+    ijkl = np.array([[0,5,4],
+                     [5,1,3],
+                     [4,3,2]])
+    
+    
 
+    
+    gamma = np.array([[ SN[0],   0.0,   0.0,   0.0, SN[2], SN[1]],
+                      [   0.0, SN[1],   0.0, SN[2],   0.0, SN[0]],
+                      [   0.0,   0.0, SN[2], SN[1], SN[0],  0.0]])
+    cp = np.dot(np.dot(gamma,C),np.transpose(gamma))
+    
+    dcp = np.zeros((3,3,3))
+    for r in range(3):
+        for i in range(3):
+            for l in range(3):
+                x = 0.0
+                y = 0.0
+                for j in range(3):
+                    m=ijkl[i,j]
+                    n=ijkl[r,l]
+                    x = x+C[m,n]*SN[j]
+                for k in range(3):
+                    m=ijkl[i,r]
+                    n=ijkl[k,l]
+                    y = y+C[m,n]*SN[k]
+                dcp[r,i,l]=x+y
+                
+    det=np.zeros(3)            
+                
+    for r in range(3):
+        for m in range(3):
+            a = cp - np.identity(3)
+            for i in range(3):
+                a[i,m] = dcp[r,i,m]
+            det[r]= det[r]+np.linalg.det(a)
+                
+    den = 0.0
+    VG = np.zeros(3)
+    for i in range(3):
+        den = den + SN[i]*det[i]
+    
+    for i in range(3):
+        VG[i] = det[i]/den    
+
+
+                
+            
+    return VG
 
 def phasevels(Cin,rh,incl,azim,polout=False):
     """docstring for phasevels"""
@@ -312,6 +378,17 @@ def groupvels(Cin,rh,incl,azim,slowout=False):
     
     pol,avs,vs1,vs2,vp,S1P,S2P,PE,S1E,S2E,XIS = phasevels(Cin,rh,inc,azi,polout=True)
     
+    print vp[0]
+    print np.linalg.norm(XIS[0,:])
+    
+    
+    #  ** convert density to g/cc
+
+    rh = rh / 1e3
+    
+    
+
+    
     
     # Slowness vectors
     SNP  = np.zeros((np.size(azi),3)) 
@@ -327,16 +404,16 @@ def groupvels(Cin,rh,incl,azim,slowout=False):
     #start looping
     for ipair in range(np.size(inc)):
 
-        
         # Slowness vectors
         SNP[ipair,:] = XIS[ipair,:]/vp[ipair]
-        SNS1[ipair,:] = XIS[ipair,:]/vs1[ipair]
-        SNS2[ipair,:] = XIS[ipair,:]/vs2[ipair]
+        SNS1[ipair,:] = XIS[ipair,:]/vs1[ipair] 
+        SNS2[ipair,:] = XIS[ipair,:]/vs2[ipair] 
         
-        # Group velocity vectors (need to convert density back first)
-        VGP[ipair,:]  = rayvel(C,SNP[ipair,:],rh/1e3)
-        VGS1[ipair,:] = rayvel(C,SNS1[ipair,:],rh/1e3)
-        VGS2[ipair,:] = rayvel(C,SNS2[ipair,:],rh/1e3)
+        # Group velocity vectors
+        VGP[ipair,:]  = rayvel(C,SNP[ipair,:],rh)
+        VGS1[ipair,:] = rayvel(C,SNS1[ipair,:],rh)
+        VGS2[ipair,:] = rayvel(C,SNS2[ipair,:],rh)
+
         
 
     if slowout:
