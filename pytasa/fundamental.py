@@ -386,9 +386,10 @@ def groupvels(Cin,rh,incl,azim,slowout=False):
 
     rh = rh / 1e3
     
-    
-
-    
+    # Phase velocity vectors
+    VPP  = np.zeros((np.size(azi),3)) 
+    VPS1 = np.zeros((np.size(azi),3)) 
+    VPS2 = np.zeros((np.size(azi),3))      
     
     # Slowness vectors
     SNP  = np.zeros((np.size(azi),3)) 
@@ -403,6 +404,11 @@ def groupvels(Cin,rh,incl,azim,slowout=False):
 
     #start looping
     for ipair in range(np.size(inc)):
+        
+        # Phase velocity vectors
+        VPP[ipair,:] = XIS[ipair,:]*vp[ipair]
+        VPS1[ipair,:] = XIS[ipair,:]*vs1[ipair] 
+        VPS2[ipair,:] = XIS[ipair,:]*vs2[ipair]
 
         # Slowness vectors
         SNP[ipair,:] = XIS[ipair,:]/vp[ipair]
@@ -417,7 +423,7 @@ def groupvels(Cin,rh,incl,azim,slowout=False):
         
 
     if slowout:
-        return VGP, VGS1, VGS2, PE, S1E, S2E, SNP, SNS1, SNS2
+        return VGP, VGS1, VGS2, PE, S1E, S2E, SNP, SNS1, SNS2, VPP, VPS1, VPS2
     else:
         return VGP, VGS1, VGS2, PE, S1E, S2E,
     
