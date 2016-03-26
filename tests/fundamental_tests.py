@@ -64,9 +64,7 @@ class PytasaFundamentalTestCase(unittest.TestCase):
         with self.assertRaises(ValueError):
             pytasa.fundamental.phasevels(stishovite_cij, stishovite_rho, [90,90,90], [0,0])
             pytasa.fundamental.phasevels(stishovite_cij, stishovite_rho, [90,90], [0,0,0])
-        
-     
-     
+            
     # Not implemented   
     #def test_phasevels_Cinvalid(self):
     #    
@@ -74,6 +72,50 @@ class PytasaFundamentalTestCase(unittest.TestCase):
     #    C[2,5]=-675.0
     #    self.assertRaises(ValueError,pytasa.fundamental.phasevels(C, stishovite_rho, [90,90], [0,0]))
     #
+    
+    def test_phasevels_stishovite_min_max(self):
+        
+        azi=np.arange(-180.,181.,1)
+        inc=np.zeros_like(azi)
+        VGP, VGS1, VGS2, PE, S1E, S2E, SNP, SNS1, SNS2, VPP, VPS1, VPS2 = pytasa.fundamental.groupvels(stishovite_cij,stishovite_rho,inc,azi,slowout=True)
+        
+        #resort S velocities and slownesses into SV and SH
+        VGSV=np.choose((S1E[:,2]>S2E[:,2]).astype(int),[VGS2.T,VGS1.T]).T
+        VGSH=np.choose((S1E[:,2]>S2E[:,2]).astype(int),[VGS1.T,VGS2.T]).T
+
+        SVE=np.choose((S1E[:,2]>S2E[:,2]).astype(int),[S2E.T,S1E.T]).T
+        SHE=np.choose((S1E[:,2]>S2E[:,2]).astype(int),[S1E.T,S2E.T]).T
+
+        SNSV=np.choose((S1E[:,2]>S2E[:,2]).astype(int),[SNS2.T,SNS1.T]).T
+        SNSH=np.choose((S1E[:,2]>S2E[:,2]).astype(int),[SNS1.T,SNS2.T]).T
+
+        VPSV=np.choose((S1E[:,2]>S2E[:,2]).astype(int),[VPS2.T,VPS1.T]).T
+        VPSH=np.choose((S1E[:,2]>S2E[:,2]).astype(int),[VPS1.T,VPS2.T]).T
+        
+        
+        # minmax phase velocities
+        np.testing.assert_almost_equal(min([np.linalg.norm(i) for i in VPP]),10.28,decimal=2)
+        np.testing.assert_almost_equal(max([np.linalg.norm(i) for i in VPP]),12.16,decimal=2)        
+        np.testing.assert_almost_equal(min([np.linalg.norm(i) for i in VPSH]),5.31,decimal=2)
+        np.testing.assert_almost_equal(max([np.linalg.norm(i) for i in VPSH]),8.39,decimal=2)        
+        np.testing.assert_almost_equal(min([np.linalg.norm(i) for i in VPSV]),7.66,decimal=2)
+        np.testing.assert_almost_equal(max([np.linalg.norm(i) for i in VPSV]),7.66,decimal=2)
+        
+        # minmax slownesses
+        np.testing.assert_almost_equal(min([np.linalg.norm(i) for i in SNP]),0.08,decimal=2)
+        np.testing.assert_almost_equal(max([np.linalg.norm(i) for i in SNP]),0.10,decimal=2)        
+        np.testing.assert_almost_equal(min([np.linalg.norm(i) for i in SNSH]),0.12,decimal=2)
+        np.testing.assert_almost_equal(max([np.linalg.norm(i) for i in SNSH]),0.19,decimal=2)        
+        np.testing.assert_almost_equal(min([np.linalg.norm(i) for i in SNSV]),0.13,decimal=2)
+        np.testing.assert_almost_equal(max([np.linalg.norm(i) for i in SNSV]),0.13,decimal=2)
+        
+        # minmax group velocities
+        np.testing.assert_almost_equal(min([np.linalg.norm(i) for i in VGP]),10.28,decimal=2)
+        np.testing.assert_almost_equal(max([np.linalg.norm(i) for i in VGP]),12.16,decimal=2)        
+        np.testing.assert_almost_equal(min([np.linalg.norm(i) for i in VGSH]),5.31,decimal=2)
+        np.testing.assert_almost_equal(max([np.linalg.norm(i) for i in VGSH]),9.40,decimal=2)        
+        np.testing.assert_almost_equal(min([np.linalg.norm(i) for i in VGSV]),7.66,decimal=2)
+        np.testing.assert_almost_equal(max([np.linalg.norm(i) for i in VGSV]),7.66,decimal=2)
 
         
         
