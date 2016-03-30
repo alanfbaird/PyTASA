@@ -26,7 +26,7 @@ class PytasaFundamentalTestCase(unittest.TestCase):
         """Check we get the same results as those given in Mainprices review (Figure 3)."""
         
         # [001], symmetry axis
-        pol,avs,vs1,vs2,vp,S1P,S2P = pytasa.fundamental.phasevels(stishovite_cij, stishovite_rho, 90, 0)
+        pol,avs,vs1,vs2,vp = pytasa.fundamental.phasevels(stishovite_cij, stishovite_rho, 90, 0)
 
         np.testing.assert_almost_equal(vs1,vs2)
         np.testing.assert_almost_equal(avs,0.0)
@@ -35,14 +35,14 @@ class PytasaFundamentalTestCase(unittest.TestCase):
         assert np.isnan(pol)
         
         # [100]
-        pol,avs,vs1,vs2,vp,S1P,S2P = pytasa.fundamental.phasevels(stishovite_cij, stishovite_rho, 0, 0)
+        pol,avs,vs1,vs2,vp = pytasa.fundamental.phasevels(stishovite_cij, stishovite_rho, 0, 0)
 
         assert (vp-10.2)**2 < 0.1**2
         assert (vs1-8.4)**2 < 0.1**2
         assert (vs2-7.7)**2 < 0.1**2
         
         # [010]
-        pol,avs,vs1,vs2,vp,S1P,S2P = pytasa.fundamental.phasevels(stishovite_cij, stishovite_rho, 0, 90)
+        pol,avs,vs1,vs2,vp = pytasa.fundamental.phasevels(stishovite_cij, stishovite_rho, 0, 90)
 
         assert (vp-10.2)**2 < 0.1**2
         assert (vs1-8.4)**2 < 0.1**2
@@ -51,7 +51,7 @@ class PytasaFundamentalTestCase(unittest.TestCase):
     
     def test_phasevels_stishovite_list(self):
         
-        pol,avs,vs1,vs2,vp,S1P,S2P = pytasa.fundamental.phasevels(stishovite_cij, stishovite_rho, [90,90,90], [0,0,0])
+        pol,avs,vs1,vs2,vp = pytasa.fundamental.phasevels(stishovite_cij, stishovite_rho, [90,90,90], [0,0,0])
         
         np.testing.assert_array_almost_equal(vs1,vs2)
         np.testing.assert_array_almost_equal(avs,[0.0,0.0,0.0])

@@ -8,7 +8,7 @@ matrices represented as 6x6 numpy arrays (Voigt notation).
 
 import numpy as np
 
-def velo(X,rh,C):
+def _velo(X,rh,C):
     """PHASE-VELOCITY SURFACES IN AN ANISOTROPIC MEDIUM
        revised April 1991
            X(3) - DIRECTION OF INTEREST
@@ -40,7 +40,7 @@ def velo(X,rh,C):
 
     return V, EIGVEC
     
-def isIsotropic(C,tol):
+def _isIsotropic(C,tol):
     """Are we isotropic - assume matrix is symmetrical at this point."""
     l = (abs(C[0,0]-C[1,1]) < tol) and (abs(C[0,0]-C[2,2]) < tol) and \
         (abs(C[0,1]-C[0,2]) < tol) and (abs(C[0,1]-C[1,2]) < tol) and \
@@ -53,7 +53,7 @@ def isIsotropic(C,tol):
     return l
 
 
-def cart2(inc, azm):
+def _cart2(inc, azm):
     """  convert from spherical to cartesian co-ordinates
          north x=100  west y=010 up z=001
          irev=+1 positive vector x
@@ -76,7 +76,7 @@ def cart2(inc, azm):
 
 
     
-def V_rot_gam(V,gam):
+def _V_rot_gam(V,gam):
     """docstring for V_rot_gam"""
     #  Make rotation matrix
     g = gam * np.pi/180.
@@ -85,7 +85,7 @@ def V_rot_gam(V,gam):
     return VR
 
 
-def V_rot_bet(V,bet):
+def _V_rot_bet(V,bet):
     """docstring for V_rot_bet"""
     #  Make rotation matrix
     b = bet * np.pi/180.
@@ -94,7 +94,7 @@ def V_rot_bet(V,bet):
     return VR
     
     
-def rayvel_old(C,SN,rho):
+def _rayvel_old(C,SN,rho):
     """
     TO CALCULATE THE RAY-VELOCITY VECTOR CORRESPONDING TO A SLOWNESS VECTOR.
     Original fortran by David Mainprice as part of the EMATRIX code.
@@ -112,21 +112,7 @@ def rayvel_old(C,SN,rho):
     ijkl = np.array([[0,5,4],
                      [5,1,3],
                      [4,3,2]])
-    
-    
-    # F[I,K]: COMPONENTS OF DETERMINANT IN TERMS OF COMPONENTS OF THE SLOWNESS VECTOR
 
-    # F = np.zeros((3,3))
-    # for i in range(3):
-    #     for k in range(3):
-    #         F[i,k]=0.0
-    #         for j in range(3):
-    #             for l in range(3):
-    #                 m=ijkl[i,j]
-    #                 n=ijkl[k,l]
-    #                 F[i,k]=F[i,k]+C[m,n]*SN[j]*SN[l]
-    #         if i==k:
-    #             F[i,k]=F[i,k]-rho
     
     gamma = np.array([[ SN[0],   0.0,   0.0,   0.0, SN[2], SN[1]],
                       [   0.0, SN[1],   0.0, SN[2],   0.0, SN[0]],
@@ -177,10 +163,10 @@ def rayvel_old(C,SN,rho):
             
     return VG
     
-def rayvel(Cin,SN,rho):
+def _rayvel(Cin,SN,rho):
     """
-    TO CALCULATE THE RAY-VELOCITY VECTOR CORRESPONDING TO A SLOWNESS VECTOR.
-    Original fortran by David Mainprice as part of the EMATRIX code.
+    Calculate the ray-velocity vector corresponding to a slowness vector.
+    Based on original fortran code by Mike Kendall and Sean Guest as part of ATRAK.
     Converted to Python by Alan Baird
     
     C: Stiffness tensor in Voigt Notation (6X6).
@@ -239,14 +225,28 @@ def rayvel(Cin,SN,rho):
     
     for i in range(3):
         VG[i] = det[i]/den    
-
-
-                
-            
+        
     return VG
 
 def phasevels(Cin,rh,incl,azim,vecout=False):
-    """docstring for phasevels"""
+    """Calculate the group velocity details for an elsticity matrix. 
+        
+        Usage: 
+            VGP, VGS1, VGS2, PE, S1E, S2E = groupvels( Cin,rh,incl,azim )                    
+                Calculate group velocity vectors from elasticity matrix C (in GPa) and
+                density rh (in kg/m^3) corresponding to a phase angle defined by
+                an inclination and azimuth (both in degrees). Additionally P, S1 and
+        		S2-wave polarisations are output in vector form.
+        
+            VGP, VGS1, VGS2, PE, S1E, S2E, SNP, SNS1, SNS2, VPP, VPS1, VPS2 = groupvels( Cin,rh,incl,azim,slowout=True )                 
+                Additionally output P, S1 and S2-wave slownesses (SNP, ...) and 
+        		phase velocities (VPP, ...) in vector form, as calculated by phasevels.
+        
+        
+        Notes:
+            Based on original fortran code by Mike Kendall and Sean Guest as part of ATRAK.
+            Converted to Python by Alan Baird.
+    """
     
     #copy C to avoid mutating input
     C=Cin.copy()
@@ -293,11 +293,11 @@ def phasevels(Cin,rh,incl,azim,vecout=False):
         cinc = inc[ipair]
 
         # create the cartesian vector
-    	XI = cart2(cinc,cazi)
+    	XI = _cart2(cinc,cazi)
         XIS[ipair,:] = XI
 
         # Compute phase velocities		
-    	V,EIGVEC=velo(XI,rh,C)
+    	V,EIGVEC=_velo(XI,rh,C)
         #print 'V',V
 		
         # pull out the eigenvectors
@@ -321,8 +321,8 @@ def phasevels(Cin,rh,incl,azim,vecout=False):
         #     (use functions optimised for the two needed 
         #      rotations, see below).
         
-        S1PR  = V_rot_gam(S1P[ipair,:],cazi) 
-    	S1PRR = V_rot_bet(S1PR,cinc) 
+        S1PR  = _V_rot_gam(S1P[ipair,:],cazi) 
+    	S1PRR = _V_rot_bet(S1PR,cinc) 
 
         ph = np.arctan2(S1PRR[1],S1PRR[2]) * 180/np.pi 
 
@@ -364,7 +364,7 @@ def phasevels(Cin,rh,incl,azim,vecout=False):
         SNS2 = (XIS.T * 1/vs2).T
         return pol,avs,vs1,vs2,vp,PE,S1E,S2E,VPP,VPS1,VPS2,SNP,SNS1,SNS2
     else:
-        return pol,avs,vs1,vs2,vp,S1P,S2P
+        return pol,avs,vs1,vs2,vp
 
 
 def groupvels(Cin,rh,incl,azim,slowout=False):
@@ -390,16 +390,6 @@ def groupvels(Cin,rh,incl,azim,slowout=False):
     #  ** convert density to g/cc
 
     rh = rh / 1e3
-    
-    # # Phase velocity vectors
-    # VPP  = np.zeros((np.size(azi),3))
-    # VPS1 = np.zeros((np.size(azi),3))
-    # VPS2 = np.zeros((np.size(azi),3))
-    #
-    # # Slowness vectors
-    # SNP  = np.zeros((np.size(azi),3))
-    # SNS1 = np.zeros((np.size(azi),3))
-    # SNS2 = np.zeros((np.size(azi),3))
 
     # Group velocity vectors
     VGP  = np.zeros((np.size(azi),3)) 
@@ -410,25 +400,15 @@ def groupvels(Cin,rh,incl,azim,slowout=False):
     #start looping
     for ipair in range(np.size(inc)):
         
-        # # Phase velocity vectors
-        # VPP[ipair,:] = XIS[ipair,:]*vp[ipair]
-        # VPS1[ipair,:] = XIS[ipair,:]*vs1[ipair]
-        # VPS2[ipair,:] = XIS[ipair,:]*vs2[ipair]
-        #
-        # # Slowness vectors
-        # SNP[ipair,:] = XIS[ipair,:]/vp[ipair]
-        # SNS1[ipair,:] = XIS[ipair,:]/vs1[ipair]
-        # SNS2[ipair,:] = XIS[ipair,:]/vs2[ipair]
-        
         # Group velocity vectors
-        VGP[ipair,:]  = rayvel(C,SNP[ipair,:],rh)
-        VGS1[ipair,:] = rayvel(C,SNS1[ipair,:],rh)
-        VGS2[ipair,:] = rayvel(C,SNS2[ipair,:],rh)
+        VGP[ipair,:]  = _rayvel(C,SNP[ipair,:],rh)
+        VGS1[ipair,:] = _rayvel(C,SNS1[ipair,:],rh)
+        VGS2[ipair,:] = _rayvel(C,SNS2[ipair,:],rh)
 
         
 
     if slowout:
         return VGP, VGS1, VGS2, PE, S1E, S2E, SNP, SNS1, SNS2, VPP, VPS1, VPS2
     else:
-        return VGP, VGS1, VGS2, PE, S1E, S2E,
+        return VGP, VGS1, VGS2, PE, S1E, S2E
     
