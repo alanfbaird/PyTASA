@@ -245,7 +245,7 @@ def rayvel(Cin,SN,rho):
             
     return VG
 
-def phasevels(Cin,rh,incl,azim,polout=False):
+def phasevels(Cin,rh,incl,azim,vecout=False):
     """docstring for phasevels"""
     
     #copy C to avoid mutating input
@@ -353,8 +353,16 @@ def phasevels(Cin,rh,incl,azim,polout=False):
         S1P[:,2] = S1P[:,2] * np.divide(isiso,isiso)
     
     
-    if polout:
-        return pol,avs,vs1,vs2,vp,S1P,S2P,PE,S1E,S2E,XIS        
+    # if polout:
+    #     return pol,avs,vs1,vs2,vp,S1P,S2P,PE,S1E,S2E,XIS
+    if vecout:
+        VPP  = (XIS.T * vp).T
+        VPS1 = (XIS.T * vs1).T
+        VPS2 = (XIS.T * vs2).T
+        SNP  = (XIS.T * 1/vp).T
+        SNS1 = (XIS.T * 1/vs1).T
+        SNS2 = (XIS.T * 1/vs2).T
+        return pol,avs,vs1,vs2,vp,PE,S1E,S2E,VPP,VPS1,VPS2,SNP,SNS1,SNS2
     else:
         return pol,avs,vs1,vs2,vp,S1P,S2P
 
@@ -376,25 +384,22 @@ def groupvels(Cin,rh,incl,azim,slowout=False):
 
     isotol = np.sqrt(np.spacing(1)); # Mbars
     
-    pol,avs,vs1,vs2,vp,S1P,S2P,PE,S1E,S2E,XIS = phasevels(Cin,rh,inc,azi,polout=True)
-    
-    print vp[0]
-    print np.linalg.norm(XIS[0,:])
-    
+    # pol,avs,vs1,vs2,vp,S1P,S2P,PE,S1E,S2E,XIS = phasevels(Cin,rh,inc,azi,polout=True)
+    pol,avs,vs1,vs2,vp,PE,S1E,S2E,VPP,VPS1,VPS2,SNP,SNS1,SNS2 = phasevels(Cin,rh,inc,azi,vecout=True)
     
     #  ** convert density to g/cc
 
     rh = rh / 1e3
     
-    # Phase velocity vectors
-    VPP  = np.zeros((np.size(azi),3)) 
-    VPS1 = np.zeros((np.size(azi),3)) 
-    VPS2 = np.zeros((np.size(azi),3))      
-    
-    # Slowness vectors
-    SNP  = np.zeros((np.size(azi),3)) 
-    SNS1 = np.zeros((np.size(azi),3)) 
-    SNS2 = np.zeros((np.size(azi),3))
+    # # Phase velocity vectors
+    # VPP  = np.zeros((np.size(azi),3))
+    # VPS1 = np.zeros((np.size(azi),3))
+    # VPS2 = np.zeros((np.size(azi),3))
+    #
+    # # Slowness vectors
+    # SNP  = np.zeros((np.size(azi),3))
+    # SNS1 = np.zeros((np.size(azi),3))
+    # SNS2 = np.zeros((np.size(azi),3))
 
     # Group velocity vectors
     VGP  = np.zeros((np.size(azi),3)) 
@@ -405,15 +410,15 @@ def groupvels(Cin,rh,incl,azim,slowout=False):
     #start looping
     for ipair in range(np.size(inc)):
         
-        # Phase velocity vectors
-        VPP[ipair,:] = XIS[ipair,:]*vp[ipair]
-        VPS1[ipair,:] = XIS[ipair,:]*vs1[ipair] 
-        VPS2[ipair,:] = XIS[ipair,:]*vs2[ipair]
-
-        # Slowness vectors
-        SNP[ipair,:] = XIS[ipair,:]/vp[ipair]
-        SNS1[ipair,:] = XIS[ipair,:]/vs1[ipair] 
-        SNS2[ipair,:] = XIS[ipair,:]/vs2[ipair] 
+        # # Phase velocity vectors
+        # VPP[ipair,:] = XIS[ipair,:]*vp[ipair]
+        # VPS1[ipair,:] = XIS[ipair,:]*vs1[ipair]
+        # VPS2[ipair,:] = XIS[ipair,:]*vs2[ipair]
+        #
+        # # Slowness vectors
+        # SNP[ipair,:] = XIS[ipair,:]/vp[ipair]
+        # SNS1[ipair,:] = XIS[ipair,:]/vs1[ipair]
+        # SNS2[ipair,:] = XIS[ipair,:]/vs2[ipair]
         
         # Group velocity vectors
         VGP[ipair,:]  = rayvel(C,SNP[ipair,:],rh)

@@ -74,12 +74,16 @@ class PytasaFundamentalTestCase(unittest.TestCase):
     #
     
     def test_phasevels_stishovite_min_max(self):
+        """
+        Test that max and min phase velocity, group velocity and slowness 
+        matches figure 5 of Mainprice (2007)
+        """
         
         azi=np.arange(-180.,181.,1)
         inc=np.zeros_like(azi)
         VGP, VGS1, VGS2, PE, S1E, S2E, SNP, SNS1, SNS2, VPP, VPS1, VPS2 = pytasa.fundamental.groupvels(stishovite_cij,stishovite_rho,inc,azi,slowout=True)
         
-        #resort S velocities and slownesses into SV and SH
+        # resort S velocities and slownesses into SV and SH
         VGSV=np.choose((S1E[:,2]>S2E[:,2]).astype(int),[VGS2.T,VGS1.T]).T
         VGSH=np.choose((S1E[:,2]>S2E[:,2]).astype(int),[VGS1.T,VGS2.T]).T
 
