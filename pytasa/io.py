@@ -105,11 +105,11 @@ def load_ematrix(fh, eunit="Mbar"):
 def load_mast_simple(fh, eunit="GPa", dunit="Kgm3", dnorm=False):
     """Load a MSAT 'simple' file
 
-    This file format consists of a serise of lines, each with two integers and a float,
+    This file format consists of a series of lines, each with two integers and a float,
     the integers represent the indicies of the elastic constant (in Voigt notation) and
-    the float is it's value. Major and minor symmetry is assumed and only one of each 
+    the float is its value. Major and minor symmetry is assumed and only one of each 
     pair of off diagonal elements can be provided. Elements outside the range i=(1,6),
-    j=(1,6) are assumed to be the density. Only one desnity can be present. Empty
+    j=(1,6) are assumed to be the density. Only one density can be present. Empty
     lines are ignored and the characters after the comment symbol '%' are removed 
     prior to reading. Any other characters result in an error. 
 
@@ -161,4 +161,168 @@ def load_mast_simple(fh, eunit="GPa", dunit="Kgm3", dnorm=False):
     rho = convert_to_kgm3(rho, dunit) 
 
     return c_out, rho
+
+
+def expand_cubic(c11,c44,c12):
+    """Return a Cij tensor of cubic symmetry based on a list of elastic constants"""
+    
+    C = np.array([[ c11, c12, c12, 0.0, 0.0, 0.0], 
+                  [ c12, c11, c12, 0.0, 0.0, 0.0], 
+                  [ c12, c12, c11, 0.0, 0.0, 0.0],
+                  [ 0.0, 0.0, 0.0, c44, 0.0, 0.0],
+                  [ 0.0, 0.0, 0.0, 0.0, c44, 0.0],
+                  [ 0.0, 0.0, 0.0, 0.0, 0.0, c44]])
+    
+    return C
+    
+def expand_hexagonal(c11,c33,c44,c12,c13):
+    """Return a Cij tensor of hexagonal symmetry based on a list of elastic constants"""
+    
+    c66=(c11-c12)/2.
+    
+    C = np.array([[ c11, c12, c13, 0.0, 0.0, 0.0], 
+                  [ c12, c11, c13, 0.0, 0.0, 0.0], 
+                  [ c13, c13, c33, 0.0, 0.0, 0.0],
+                  [ 0.0, 0.0, 0.0, c44, 0.0, 0.0],
+                  [ 0.0, 0.0, 0.0, 0.0, c44, 0.0],
+                  [ 0.0, 0.0, 0.0, 0.0, 0.0, c66]])
+    
+    return C
+
+def expand_trigonal(c11,c33,c44,c12,c13,c14,c15=0.0):
+    """Return a Cij tensor of trigonal symmetry based on a list of elastic constants"""
+    
+    c66=(c11-c12)/2.
+    
+    C = np.array([[ c11, c12, c13, c14, c15, 0.0], 
+                  [ c12, c11, c13,-c14,-c15, 0.0], 
+                  [ c13, c13, c33, 0.0, 0.0, 0.0],
+                  [ c14,-c14, 0.0, c44, 0.0,-c15],
+                  [ c15,-c15, 0.0, 0.0, c44, c14],
+                  [ 0.0, 0.0, 0.0,-c15, c14, c66]])
+    return C
+
+def expand_orthorhombic(c11,c22,c33,c44,c55,c66,c12,c13,c23):
+    """Return a Cij tensor of orthorhombic symmetry based on a list of elastic constants"""
+    C = np.array([[ c11, c12, c13, 0.0, 0.0, 0.0], 
+                  [ c12, c22, c23, 0.0, 0.0, 0.0], 
+                  [ c13, c23, c33, 0.0, 0.0, 0.0],
+                  [ 0.0, 0.0, 0.0, c44, 0.0, 0.0],
+                  [ 0.0, 0.0, 0.0, 0.0, c55, 0.0],
+                  [ 0.0, 0.0, 0.0, 0.0, 0.0, c66]])
+    return C
+
+def expand_tetragonal(c11,c33,c44,c66,c12,c13,c16=0.0):
+    """Return a Cij tensor of tetragonal symmetry based on a list of elastic constants"""
+    C = np.array([[ c11, c12, c13, 0.0, 0.0, c16], 
+                  [ c12, c11, c13, 0.0, 0.0,-c16], 
+                  [ c13, c13, c33, 0.0, 0.0, 0.0],
+                  [ 0.0, 0.0, 0.0, c44, 0.0, 0.0],
+                  [ 0.0, 0.0, 0.0, 0.0, c44, 0.0],
+                  [ c16,-c16, 0.0, 0.0, 0.0, c66]])
+    return C
+
+def expand_monoclinic(c11,c22,c33,c44,c55,c66,c12,c13,c23,c15,c25,c35,c46):
+    """Return a Cij tensor of monoclinic symmetry based on a list of elastic constants"""
+    C = np.array([[ c11, c12, c13, 0.0, c15, 0.0], 
+                  [ c12, c22, c23, 0.0, c25, 0.0], 
+                  [ c13, c23, c33, 0.0, c35, 0.0],
+                  [ 0.0, 0.0, 0.0, c44, 0.0, c46],
+                  [ c15, c25, c35, 0.0, c55, 0.0],
+                  [ 0.0, 0.0, 0.0, c46, 0.0, c66]])
+    return C
+
+    
+def build_iso(**kwargs):
+    """Given two isotropic moduli create an elasticity matrix for an isotropic material
+    and also return all other moduli.
+    
+    Two elastic moduli are required and should be given as keyword arguments.
+    Permitted moduli are:
+        lam - first Lame parameter, in GPa    
+        mu - shear modulus (second Lame parameter), in GPa
+        K - bulk modulus, in GPa.
+        E - Young's modulus, in GPa.
+        nu - Poisson's ratio, dimensionless.
+        M - 'P-wave modulus', in GPa.
+        
+    The function returns a 6x6 numpy array representing the elastic constants in GPa in
+    Voigt notation, and floats representing lam, mu, K, E, nu, and M.
+    """
+    
+    if len(kwargs) != 2:
+        raise ValueError('Two (and only two) elastic constants are required')
+    
+    for key in kwargs:
+        if key not in ['lam','mu','K','E','nu','M']:
+            raise ValueError('keyword '+key+' not recognized')
+        
+    
+    if 'lam' in kwargs:
+        lam = kwargs['lam']
+        if 'mu' in kwargs:
+            mu = kwargs['mu']
+        elif 'K' in kwargs:
+            mu = 3.0*(kwargs['K']-lam)/2.0
+        elif 'E' in kwargs:
+            E=kwargs['E']
+            R = np.sqrt(E**2+9*lam**2+2*E*lam)
+            mu = (E-3.0*lam+R)/4.0
+        elif 'nu' in kwargs:
+            mu = lam*(1.0-2.0*kwargs['nu'])/(2.0*kwargs['nu'])
+        elif 'M' in kwargs:
+            mu = (kwargs['M']-lam)/2.0
+    elif 'mu' in kwargs:
+        mu = kwargs['mu']
+        if 'K' in kwargs:
+            lam = kwargs['K']-2.0*mu/3.0
+        elif 'E' in kwargs:
+            lam = mu*(kwargs['E']-2.0*mu)/(3.0*mu-kwargs['E'])
+        elif 'nu' in kwargs:
+            lam = 2.0*mu*kwargs['nu']/(1.0-2.0*kwargs['nu'])
+        elif 'M' in kwargs:
+            lam = kwargs['M']-2.0*mu
+    elif 'K' in kwargs:
+        if 'E' in kwargs:
+            mu = 3.0*kwargs['K']*kwargs['E']/(9.0*kwargs['K']-kwargs['E'])
+            lam = mu*(kwargs['E']-2.0*mu)/(3.0*mu-kwargs['E'])
+        elif 'nu' in kwargs:
+            lam = 3.0*kwargs['K']*kwargs['nu']/(1+kwargs['nu'])
+            mu = lam*(1.0-2.0*kwargs['nu'])/(2.0*kwargs['nu'])
+        elif 'M' in kwargs:
+            lam = (3.0*kwrgs['K']-kwargs['M'])/2.0
+            mu = (kwargs['M']-lam)/2.0
+    elif 'E' in kwargs:
+        if 'nu' in kwargs:
+            mu = kwargs['E']/(2*(1+kwargs['nu']))
+            lam = 2.0*mu*kwargs['nu']/(1.0-2.0*kwargs['nu'])
+        elif 'M' in kwargs:
+            E=kwargs['E']
+            M=kwargs['M']
+            S=np.sqrt(E**2 + 9*M**2 - 10*E*M)
+            lam = (M-E+S)/4.0
+            mu = (M-lam)/2.0
+    elif 'nu' in kwargs:
+        if 'M' in kwargs:
+            lam = kwargs['M']*kwargs['nu']/(1-kwargs['nu'])
+            mu = (kwargs['M']-lam)/2.0
+            
+    
+    M = 2*mu+lam
+    E = (mu*((3*lam)+(2*mu)))/(lam+mu)
+    K = lam + (2/3)*mu
+    nu = lam/(2*(lam+mu))
+    
+
+    C = np.array([[  M, lam, lam, 0.0, 0.0, 0.0],
+                  [lam,   M, lam, 0.0, 0.0, 0.0],
+                  [lam, lam,   M, 0.0, 0.0, 0.0],
+                  [0.0, 0.0, 0.0,  mu, 0.0, 0.0],
+                  [0.0, 0.0, 0.0, 0.0,  mu, 0.0],
+                  [0.0, 0.0, 0.0, 0.0, 0.0,  mu]])
+    
+    
+    return C, lam,mu,K,E,nu,M
+
+
              
