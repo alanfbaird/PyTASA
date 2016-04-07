@@ -18,10 +18,6 @@ def _velo(X,rh,C):
        Translated to MATLAB by James Wookey   
        Translated to Python by Alan Baird      
     """
-    ijkl = np.array([[0,5,4],
-                     [5,1,3],
-                     [4,3,2]])
-    
     gamma = np.array([[ X[0],  0.0,  0.0,  0.0, X[2], X[1]],
                       [  0.0, X[1],  0.0, X[2],  0.0, X[0]],
                       [  0.0,  0.0, X[2], X[1], X[0],  0.0]])
@@ -39,8 +35,9 @@ def _velo(X,rh,C):
     EIGVEC=EIVEC[:,IND[::-1]]
 
     return V, EIGVEC
+
     
-def _isIsotropic(C,tol):
+def _is_isotropic(C,tol):
     """Are we isotropic - assume matrix is symmetrical at this point."""
     l = (abs(C[0,0]-C[1,1]) < tol) and (abs(C[0,0]-C[2,2]) < tol) and \
         (abs(C[0,1]-C[0,2]) < tol) and (abs(C[0,1]-C[1,2]) < tol) and \
@@ -74,7 +71,6 @@ def _cart2(inc, azm):
     X = X/r 
     return X
 
-
     
 def _V_rot_gam(V,gam):
     """docstring for V_rot_gam"""
@@ -105,22 +101,17 @@ def _rayvel_old(C,SN,rho):
     rho: Density
     
     returns VG: Group velocity vector (3)
-    
-    
     """
     
     ijkl = np.array([[0,5,4],
                      [5,1,3],
                      [4,3,2]])
-
-    
+  
     gamma = np.array([[ SN[0],   0.0,   0.0,   0.0, SN[2], SN[1]],
                       [   0.0, SN[1],   0.0, SN[2],   0.0, SN[0]],
                       [   0.0,   0.0, SN[2], SN[1], SN[0],  0.0]])
     F = np.dot(np.dot(gamma,C),np.transpose(gamma))-np.identity(3)*rho
-    
-    
-    
+       
     # Signed cofactors of F[i,k]
     CF = np.zeros((3,3))
     
@@ -159,9 +150,9 @@ def _rayvel_old(C,SN,rho):
         denom=denom+SN[i]*DFD[i]
     for i in range(3):
         VG[i]=DFD[i]/denom
-                
-            
+                       
     return VG
+    
     
 def _rayvel(Cin,SN,rho):
     """
@@ -173,24 +164,19 @@ def _rayvel(Cin,SN,rho):
     SN: Slowness vector (3).
     rho: Density
     
-    returns VG: Group velocity vector (3)
-    
-    
+    returns VG: Group velocity vector (3)    
     """
     
     C = Cin/rho
     
-    
     ijkl = np.array([[0,5,4],
                      [5,1,3],
                      [4,3,2]])
-    
-    
-
-    
+      
     gamma = np.array([[ SN[0],   0.0,   0.0,   0.0, SN[2], SN[1]],
                       [   0.0, SN[1],   0.0, SN[2],   0.0, SN[0]],
                       [   0.0,   0.0, SN[2], SN[1], SN[0],  0.0]])
+
     cp = np.dot(np.dot(gamma,C),np.transpose(gamma))
     
     dcp = np.zeros((3,3,3))
@@ -228,6 +214,7 @@ def _rayvel(Cin,SN,rho):
         
     return VG
 
+
 def phasevels(Cin,rh,incl,azim,vecout=False):
     """Calculate the group velocity details for an elsticity matrix. 
         
@@ -236,11 +223,11 @@ def phasevels(Cin,rh,incl,azim,vecout=False):
                 Calculate group velocity vectors from elasticity matrix C (in GPa) and
                 density rh (in kg/m^3) corresponding to a phase angle defined by
                 an inclination and azimuth (both in degrees). Additionally P, S1 and
-        		S2-wave polarisations are output in vector form.
+                S2-wave polarisations are output in vector form.
         
             VGP, VGS1, VGS2, PE, S1E, S2E, SNP, SNS1, SNS2, VPP, VPS1, VPS2 = groupvels( Cin,rh,incl,azim,slowout=True )                 
                 Additionally output P, S1 and S2-wave slownesses (SNP, ...) and 
-        		phase velocities (VPP, ...) in vector form, as calculated by phasevels.
+                phase velocities (VPP, ...) in vector form, as calculated by phasevels.
         
         
         Notes:
@@ -259,10 +246,8 @@ def phasevels(Cin,rh,incl,azim,vecout=False):
     if (np.size(inc)!=np.size(azi)):
         raise ValueError("AZI and INC must be scalars or vectors of the same dimension")
         
-
     isotol = np.sqrt(np.spacing(1)); # Mbars
     
-
     #Check that C is valid (if check not suppressed)
     #MS_checkC(C);
       
@@ -293,13 +278,13 @@ def phasevels(Cin,rh,incl,azim,vecout=False):
         cinc = inc[ipair]
 
         # create the cartesian vector
-    	XI = _cart2(cinc,cazi)
+        XI = _cart2(cinc,cazi)
         XIS[ipair,:] = XI
 
-        # Compute phase velocities		
-    	V,EIGVEC=_velo(XI,rh,C)
+        # Compute phase velocities      
+        V,EIGVEC=_velo(XI,rh,C)
         #print 'V',V
-		
+        
         # pull out the eigenvectors
         P  = EIGVEC[:,0]
         S1 = EIGVEC[:,1]
@@ -322,7 +307,7 @@ def phasevels(Cin,rh,incl,azim,vecout=False):
         #      rotations, see below).
         
         S1PR  = _V_rot_gam(S1P[ipair,:],cazi) 
-    	S1PRR = _V_rot_bet(S1PR,cinc) 
+        S1PRR = _V_rot_bet(S1PR,cinc) 
 
         ph = np.arctan2(S1PRR[1],S1PRR[2]) * 180/np.pi 
 
@@ -330,7 +315,7 @@ def phasevels(Cin,rh,incl,azim,vecout=False):
         if (ph < -90.): ph = ph + 180.
         if (ph >  90.): ph = ph - 180.
 
-        #	** calculate some useful values
+        #   ** calculate some useful values
         dVS =  (V[1]-V[2]) 
         VSmean = (V[1]+V[2])/2.0 
 
