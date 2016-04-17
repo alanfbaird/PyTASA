@@ -163,6 +163,12 @@ def load_mast_simple(fh, eunit="GPa", dunit="Kgm3", dnorm=False):
     return c_out, rho
 
 
+def expand_isotropic(c11, c44):
+    """Return an isotropic  Cij tensor given two elastic constants"""
+    # Note: c11 is M and c44 is mu, so use build_iso
+    return build_iso(M=c11, mu=c44)[0]
+
+
 def expand_cubic(c11,c44,c12):
     """Return a Cij tensor of cubic symmetry based on a list of elastic constants"""
     
