@@ -113,6 +113,42 @@ class PytasaIOTestCase(unittest.TestCase):
                                                  76.1444)
         np.testing.assert_almost_equal(res_valid, res_test, decimal=4)
 
+    def test_build_isotropic(self):
+        """Test build_isotropic for all combinations of input. However, this
+        is rather circular."""
+
+        C, lam, mu, K, E, nu, M = pytasa.io.build_iso(K=300.8, mu=123.7)
+
+        np.testing.assert_almost_equal(C, pytasa.io.build_iso(lam=C[0,1], 
+                                                              mu=C[3,3])[0])
+        np.testing.assert_almost_equal(C, pytasa.io.build_iso(mu=C[3,3], 
+                                                              lam=C[0,1])[0])
+        np.testing.assert_almost_equal(C, pytasa.io.build_iso(M=C[0,0], 
+                                                              mu=C[3,3])[0])
+        np.testing.assert_almost_equal(C, pytasa.io.build_iso(mu=C[3,3], 
+                                                              M=C[0,0])[0])
+
+        np.testing.assert_almost_equal(C, pytasa.io.build_iso(E=E, mu=mu)[0])
+        np.testing.assert_almost_equal(C, pytasa.io.build_iso(mu=mu, E=E)[0])
+        np.testing.assert_almost_equal(C, pytasa.io.build_iso(E=E, mu=mu)[0])
+        np.testing.assert_almost_equal(C, pytasa.io.build_iso(K=K, lam=lam)[0])
+        np.testing.assert_almost_equal(C, pytasa.io.build_iso(lam=lam, K=K)[0])
+        np.testing.assert_almost_equal(C, pytasa.io.build_iso(K=K, mu=mu)[0])
+        np.testing.assert_almost_equal(C, pytasa.io.build_iso(mu=mu, K=K)[0])
+        np.testing.assert_almost_equal(C, pytasa.io.build_iso(nu=nu,lam=lam)[0])
+        np.testing.assert_almost_equal(C, pytasa.io.build_iso(lam=lam,nu=nu)[0])
+        np.testing.assert_almost_equal(C, pytasa.io.build_iso(nu=nu, mu=mu)[0])
+        np.testing.assert_almost_equal(C, pytasa.io.build_iso(mu=mu, nu=nu)[0])
+        np.testing.assert_almost_equal(C, pytasa.io.build_iso(E=E, nu=nu)[0])
+        np.testing.assert_almost_equal(C, pytasa.io.build_iso(nu=nu, E=E)[0])
+        np.testing.assert_almost_equal(C, pytasa.io.build_iso(K=K, nu=nu)[0])
+        np.testing.assert_almost_equal(C, pytasa.io.build_iso(nu=nu, K=K)[0])
+        np.testing.assert_almost_equal(C, pytasa.io.build_iso(K=K, E=E)[0])
+        np.testing.assert_almost_equal(C, pytasa.io.build_iso(E=E, K=K)[0])
+        np.testing.assert_almost_equal(C, pytasa.io.build_iso(M=M, mu=mu)[0])
+        np.testing.assert_almost_equal(C, pytasa.io.build_iso(mu=mu, M=M)[0])
+
+
 def suite():
     return unittest.makeSuite(PytasaIOTestCase, 'test')
 

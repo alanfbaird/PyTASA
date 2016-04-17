@@ -263,7 +263,6 @@ def build_iso(**kwargs):
         if key not in ['lam','mu','K','E','nu','M']:
             raise ValueError('keyword '+key+' not recognized')
         
-    
     if 'lam' in kwargs:
         lam = kwargs['lam']
         if 'mu' in kwargs:
@@ -316,7 +315,7 @@ def build_iso(**kwargs):
     
     M = 2*mu+lam
     E = (mu*((3*lam)+(2*mu)))/(lam+mu)
-    K = lam + (2/3)*mu
+    K = lam + (2.0/3.0)*mu
     nu = lam/(2*(lam+mu))
     
 
