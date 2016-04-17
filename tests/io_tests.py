@@ -68,6 +68,74 @@ class PytasaIOTestCase(unittest.TestCase):
        np.testing.assert_almost_equal(olivine_cij_voigt, C_input, decimal=3)
        np.testing.assert_almost_equal(olivine_rho, rho)
 
+    def test_expand_auto_isotropic(self):
+        """Text for expand isotropic, taken from MSAT test_MS_expand"""
+        c_in = np.array([[0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                         [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                         [0.0, 0.0, 166.6667, 0.0, 0.0, 0.0],
+                         [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                         [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                         [0.0, 0.0, 0.0, 0.0, 0.0, 50.0]])
+        res_valid = np.array([[166.6667, 66.6667, 66.6667, 0.0, 0.0, 0.0],
+                              [66.6667, 166.6667, 66.6667, 0.0, 0.0, 0.0],
+                              [66.6667, 66.6667, 166.6667, 0.0, 0.0, 0.0],
+                              [0.0, 0.0, 0.0, 50.0, 0.0, 0.0],
+                              [0.0, 0.0, 0.0, 0.0, 50.0, 0.0],
+                              [0.0, 0.0, 0.0, 0.0, 0.0, 50.0]])
+        res_test = pytasa.io.expand(c_in)
+        np.testing.assert_almost_equal(res_valid, res_test, decimal=4)
+
+    def test_expand_auto_cubic(self):
+        """Text for expand cubic, taken from MSAT test_MS_expand"""
+        c_in = np.array([[0.0, 66.6667, 0.0, 0.0, 0.0, 0.0],
+                         [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                         [0.0, 0.0, 166.6667, 0.0, 0.0, 0.0],
+                         [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                         [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                         [0.0, 0.0, 0.0, 0.0, 0.0, 50.0]])
+        res_valid = np.array([[166.6667, 66.6667, 66.6667, 0.0, 0.0, 0.0],
+                              [66.6667, 166.6667, 66.6667, 0.0, 0.0, 0.0],
+                              [66.6667, 66.6667, 166.6667, 0.0, 0.0, 0.0],
+                              [0.0, 0.0, 0.0, 50.0, 0.0, 0.0],
+                              [0.0, 0.0, 0.0, 0.0, 50.0, 0.0],
+                              [0.0, 0.0, 0.0, 0.0, 0.0, 50.0]])
+        res_test = pytasa.io.expand(c_in)
+        np.testing.assert_almost_equal(res_valid, res_test, decimal=4)
+
+    def test_expand_auto_hexagonal(self):
+        """Text for expand hexagonal, taken from MSAT test_MS_expand"""
+        c_in = np.array([[153.6, 0.0, 76.0444, 0.0, 0.0, 0.0],
+                         [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                         [0.0, 0.0, 128.0, 0.0, 0.0, 0.0],
+                         [0.0, 0.0, 0.0, 32.0, 0.0, 0.0],
+                         [0.0, 0.0, 0.0, 0.0,  0.0, 0.0],
+                         [0.0, 0.0, 0.0, 0.0, 0.0,  38.4]])
+        res_valid = np.array([[153.6, 76.8, 76.0444, 0.0, 0.0, 0.0],
+                              [76.8, 153.6, 76.0444, 0.0, 0.0, 0.0],
+                              [76.0444, 76.0444, 128.0, 0.0, 0.0, 0.0],
+                              [0.0, 0.0, 0.0, 32.0, 0.0, 0.0],
+                              [0.0, 0.0, 0.0, 0.0,  32.0, 0.0],
+                              [0.0, 0.0, 0.0, 0.0, 0.0,  38.4]])
+        res_test = pytasa.io.expand(c_in)
+        np.testing.assert_almost_equal(res_valid, res_test, decimal=4)
+
+    def test_expand_auto_orthorhombc(self):
+        """Text for expand orthorhombc, taken from MSAT test_MS_expand"""
+        c_in = np.array([[153.6, 76.82, 76.0444, 0.0, 0.0, 0.0],
+                         [0.0, 155.6, 76.1444, 0.0, 0.0, 0.0],
+                         [0.0, 0.0, 128.1, 0.0, 0.0, 0.0],
+                         [0.0, 0.0, 0.0, 32.1, 0.0, 0.0],
+                         [0.0, 0.0, 0.0, 0.0, 32.0, 0.0],
+                         [0.0, 0.0, 0.0, 0.0, 0.0, 38.4]])
+        res_valid = np.array([[153.6, 76.82, 76.0444, 0.0, 0.0, 0.0],
+                              [76.82, 155.6, 76.1444, 0.0, 0.0, 0.0],
+                              [76.0444, 76.1444, 128.1, 0.0, 0.0, 0.0],
+                              [0.0, 0.0, 0.0, 32.1, 0.0, 0.0],
+                              [0.0, 0.0, 0.0, 0.0, 32.0, 0.0],
+                              [0.0, 0.0, 0.0, 0.0, 0.0, 38.4]])
+        res_test = pytasa.io.expand(c_in)
+        np.testing.assert_almost_equal(res_valid, res_test, decimal=4)
+
     def test_expand_isotropic(self):
         """Text for expand isotropic, taken from MSAT test_MS_expand"""
         res_valid = np.array([[166.6667, 66.6667, 66.6667, 0.0, 0.0, 0.0],
@@ -76,7 +144,8 @@ class PytasaIOTestCase(unittest.TestCase):
                               [0.0, 0.0, 0.0, 50.0, 0.0, 0.0],
                               [0.0, 0.0, 0.0, 0.0, 50.0, 0.0],
                               [0.0, 0.0, 0.0, 0.0, 0.0, 50.0]])
-        res_test = pytasa.io.expand_isotropic(166.6667, 66.6667)
+        res_test = pytasa.io.expand_isotropic(166.6667, 50.0)
+        np.testing.assert_almost_equal(res_valid, res_test, decimal=4)
 
     def test_expand_cubic(self):
         """Text for expand cubic, taken from MSAT test_MS_expand"""
@@ -100,7 +169,7 @@ class PytasaIOTestCase(unittest.TestCase):
         res_test = pytasa.io.expand_hexagonal(153.6, 128.0, 32.0, 76.8, 76.0444)
         np.testing.assert_almost_equal(res_valid, res_test, decimal=4)
 
-    def test_expand_hexagonal(self):
+    def test_expand_orthorhombc(self):
         """Text for expand orthorhombc, taken from MSAT test_MS_expand"""
         res_valid = np.array([[153.6, 76.82, 76.0444, 0.0, 0.0, 0.0],
                               [76.82, 155.6, 76.1444, 0.0, 0.0, 0.0],

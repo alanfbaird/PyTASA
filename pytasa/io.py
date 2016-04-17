@@ -163,6 +163,53 @@ def load_mast_simple(fh, eunit="GPa", dunit="Kgm3", dnorm=False):
     return c_out, rho
 
 
+def expand(c_in, mode='auto'):
+    """Expand a minimal set of elastic constants based on a specifed symmetry to a full Cij tensor. 
+
+    Fill out elastic tensor C based on symmetry, defined by mode. This can take the following 
+    values:
+        'auto'  - assume symmetry based on number of Cijs specified 
+        'iso'   - isotropic (nec=2) ; C33 and C66 must be specified.
+        'hex'   - hexagonal (nec=5) ; C33, C44, C11, C66 and C13 must be specified, x3 is symmetry
+                  axis
+        'vti'   - synonym for hexagonal
+        'cubic' - cubic (nec=3) ; C33, C66 and C12 must be specified
+        'ortho' - orthorhombic (nec=9); All six diagonal (C11-C66), C12,
+                  C13 and C23 must be specified
+
+    Cijs *not* specified in the appropriate symmetry should be zero in the input matrix. 
+    """
+
+    if mode == 'auto':
+        nelc = np.count_nonzero(c_in)
+        if nelc == 2:
+            mode = 'iso'
+        elif nelc == 3:
+            mode = 'cubic'
+        elif nelc == 5:
+            mode = 'hex'
+        elif nelc == 9:
+            mode = 'ortho'
+        else:
+            raise PytasaIOError("Auto expansion not supported for {} constants".format(nelc))
+    elif mode == 'vti':
+        mode = 'hex'
+        
+    if mode == 'iso':
+        c_out = expand_isotropic(c_in[2,2], c_in[5,5])
+    elif mode == 'cubic':
+        c_out = expand_cubic(c_in[2,2], c_in[5,5], c_in[0,1])
+    elif mode == 'hex':
+        c_out = expand_hexagonal(c_in[0,0], c_in[2,2], c_in[3,3], c_in[0,0]-2.0*c_in[5,5], c_in[0,2])
+    elif mode == 'ortho':
+        c_out = expand_orthorhombic(c_in[0,0], c_in[1,1], c_in[2,2], c_in[3,3], c_in[4,4],
+                                    c_in[5,5], c_in[0,1], c_in[0,2], c_in[1,2])
+    else:
+        raise PytasaIOError("Symmetry expansion not supported for mode {}".format(mode))
+
+    return c_out
+
+
 def expand_isotropic(c11, c44):
     """Return an isotropic  Cij tensor given two elastic constants"""
     # Note: c11 is M and c44 is mu, so use build_iso
