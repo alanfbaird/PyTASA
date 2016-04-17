@@ -23,6 +23,14 @@ olivine_cij_voigt = np.array([[320.5, 68.1, 71.6, 0.0, 0.0, 0.0],
                               [0.0, 0.0, 0.0, 0.0, 0.0, 78.7]])
 olivine_rho = 3355.0
 
+iso_cij_voigt = np.array([[237.5533, 78.473, 78.473, 0.0, 0.0, 0.0],
+                          [78.473, 237.5533, 78.473, 0.0, 0.0, 0.0],
+                          [78.473, 78.473, 237.5533, 0.0, 0.0, 0.0],
+                          [0.0, 0.0, 0.0, 79.5400, 0.0, 0.0],
+                          [0.0, 0.0, 0.0, 0.0, 79.5400, 0.0],
+                          [0.0, 0.0, 0.0, 0.0, 0.0, 79.5400]])
+iso_rho = 3355.0
+
 class PytasaIOTestCase(unittest.TestCase):
     """
     Test case for low level reading from files in various formats
@@ -67,6 +75,20 @@ class PytasaIOTestCase(unittest.TestCase):
                                             eunit="Pa")
        np.testing.assert_almost_equal(olivine_cij_voigt, C_input, decimal=3)
        np.testing.assert_almost_equal(olivine_rho, rho)
+
+    def test_load_msat_iso_file(self):
+       c_input, rho = pytasa.io.load_mast_simple(os.path.join(DATA, 
+                                            "test_MS_load_iso.txt"),
+                                            symmetry='iso')
+       np.testing.assert_almost_equal(iso_cij_voigt, c_input, decimal=3)
+       np.testing.assert_almost_equal(iso_rho, rho)
+
+    def test_load_msat_iso_auto_file(self):
+       c_input, rho = pytasa.io.load_mast_simple(os.path.join(DATA, 
+                                            "test_MS_load_iso.txt"),
+                                            symmetry='auto')
+       np.testing.assert_almost_equal(iso_cij_voigt, c_input, decimal=3)
+       np.testing.assert_almost_equal(iso_rho, rho)
 
     def test_expand_auto_isotropic(self):
         """Text for expand isotropic, taken from MSAT test_MS_expand"""

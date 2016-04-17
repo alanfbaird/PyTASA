@@ -102,7 +102,7 @@ def load_ematrix(fh, eunit="Mbar"):
 
 
 @openfile
-def load_mast_simple(fh, eunit="GPa", dunit="Kgm3", dnorm=False):
+def load_mast_simple(fh, eunit="GPa", dunit="Kgm3", dnorm=False, symmetry=None):
     """Load a MSAT 'simple' file
 
     This file format consists of a series of lines, each with two integers and a float,
@@ -121,7 +121,19 @@ def load_mast_simple(fh, eunit="GPa", dunit="Kgm3", dnorm=False):
     squared). This normalisation is removed if the dnorm optional argument is provided.
     
     The function returns a 6x6 numpy array representing the elastic constants in GPa and
-    Voigt notation, and a float representing the density in Kgm^-3."""
+    Voigt notation, and a float representing the density in Kgm^-3.
+
+    Setting the symmetry keyword argument to something other than `None` will 
+    fill out the elastic tensor based on symmetry, defined by the string mode. 
+    This can take the following values:
+         None   - nothing attempted, unspecified Cijs are zero (default)
+        'auto'  - assume symmetry based on number of Cijs specified 
+        'iso'   - isotropic (nCij=2) ; C33 and C66 must be specified.
+        'hex'   - hexagonal (nCij=5) ; C11, C33, C44, C66 and C13 must be
+                  specified, x3 is symmetry axis
+        'vti'   - synonym for hexagonal
+        'cubic' - cubic (nCij=3) ; C33, C66 and C12 must be specified
+    """
     c_seen = np.zeros((6,6),dtype=bool)
     c_out = np.zeros((6,6))
     rho_seen = False
@@ -144,7 +156,8 @@ def load_mast_simple(fh, eunit="GPa", dunit="Kgm3", dnorm=False):
                 if (not c_seen[ii-1,jj-1]) and (not c_seen[jj-1,ii-1]):
                     c_out[ii-1, jj-1] = cc
                     c_seen[ii-1,jj-1] = True
-                    c_out[jj-1, ii-1] = cc
+                    if symmetry is None:
+                        c_out[jj-1, ii-1] = cc
                     c_seen[jj-1,ii-1] = True
                 else:
                     raise PytasaIOError("Double specified value on line {}".format(i+1))
@@ -154,6 +167,9 @@ def load_mast_simple(fh, eunit="GPa", dunit="Kgm3", dnorm=False):
                     rho_seen = True
                 else:
                     raise PytasaIOError("Double specified value on line {}".format(i))
+
+    if symmetry is not None:
+        c_out = expand(c_out, symmetry)
 
     if dnorm:
         c_out = unnormalise_density(c_out, rho)
