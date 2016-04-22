@@ -102,7 +102,7 @@ def load_ematrix(fh, eunit="Mbar"):
 
 
 @openfile
-def load_mast_simple(fh, eunit="GPa", dunit="Kgm3", dnorm=False):
+def load_mast_simple(fh, eunit="GPa", dunit="Kgm3", dnorm=False, symmetry=None):
     """Load a MSAT 'simple' file
 
     This file format consists of a series of lines, each with two integers and a float,
@@ -121,7 +121,19 @@ def load_mast_simple(fh, eunit="GPa", dunit="Kgm3", dnorm=False):
     squared). This normalisation is removed if the dnorm optional argument is provided.
     
     The function returns a 6x6 numpy array representing the elastic constants in GPa and
-    Voigt notation, and a float representing the density in Kgm^-3."""
+    Voigt notation, and a float representing the density in Kgm^-3.
+
+    Setting the symmetry keyword argument to something other than `None` will 
+    fill out the elastic tensor based on symmetry, defined by the string mode. 
+    This can take the following values:
+         None   - nothing attempted, unspecified Cijs are zero (default)
+        'auto'  - assume symmetry based on number of Cijs specified 
+        'iso'   - isotropic (nCij=2) ; C33 and C66 must be specified.
+        'hex'   - hexagonal (nCij=5) ; C11, C33, C44, C66 and C13 must be
+                  specified, x3 is symmetry axis
+        'vti'   - synonym for hexagonal
+        'cubic' - cubic (nCij=3) ; C33, C66 and C12 must be specified
+    """
     c_seen = np.zeros((6,6),dtype=bool)
     c_out = np.zeros((6,6))
     rho_seen = False
@@ -144,7 +156,8 @@ def load_mast_simple(fh, eunit="GPa", dunit="Kgm3", dnorm=False):
                 if (not c_seen[ii-1,jj-1]) and (not c_seen[jj-1,ii-1]):
                     c_out[ii-1, jj-1] = cc
                     c_seen[ii-1,jj-1] = True
-                    c_out[jj-1, ii-1] = cc
+                    if symmetry is None:
+                        c_out[jj-1, ii-1] = cc
                     c_seen[jj-1,ii-1] = True
                 else:
                     raise PytasaIOError("Double specified value on line {}".format(i+1))
@@ -155,12 +168,68 @@ def load_mast_simple(fh, eunit="GPa", dunit="Kgm3", dnorm=False):
                 else:
                     raise PytasaIOError("Double specified value on line {}".format(i))
 
+    if symmetry is not None:
+        c_out = expand(c_out, symmetry)
+
     if dnorm:
         c_out = unnormalise_density(c_out, rho)
     c_out = convert_to_gpa(c_out, eunit)
     rho = convert_to_kgm3(rho, dunit) 
 
     return c_out, rho
+
+
+def expand(c_in, mode='auto'):
+    """Expand a minimal set of elastic constants based on a specifed symmetry to a full Cij tensor. 
+
+    Fill out elastic tensor C based on symmetry, defined by mode. This can take the following 
+    values:
+        'auto'  - assume symmetry based on number of Cijs specified 
+        'iso'   - isotropic (nec=2) ; C33 and C66 must be specified.
+        'hex'   - hexagonal (nec=5) ; C33, C44, C11, C66 and C13 must be specified, x3 is symmetry
+                  axis
+        'vti'   - synonym for hexagonal
+        'cubic' - cubic (nec=3) ; C33, C66 and C12 must be specified
+        'ortho' - orthorhombic (nec=9); All six diagonal (C11-C66), C12,
+                  C13 and C23 must be specified
+
+    Cijs *not* specified in the appropriate symmetry should be zero in the input matrix. 
+    """
+
+    if mode == 'auto':
+        nelc = np.count_nonzero(c_in)
+        if nelc == 2:
+            mode = 'iso'
+        elif nelc == 3:
+            mode = 'cubic'
+        elif nelc == 5:
+            mode = 'hex'
+        elif nelc == 9:
+            mode = 'ortho'
+        else:
+            raise PytasaIOError("Auto expansion not supported for {} constants".format(nelc))
+    elif mode == 'vti':
+        mode = 'hex'
+        
+    if mode == 'iso':
+        c_out = expand_isotropic(c_in[2,2], c_in[5,5])
+    elif mode == 'cubic':
+        c_out = expand_cubic(c_in[2,2], c_in[5,5], c_in[0,1])
+    elif mode == 'hex':
+        c_out = expand_hexagonal(c_in[0,0], c_in[2,2], c_in[3,3], c_in[0,0]-2.0*c_in[5,5], c_in[0,2])
+    elif mode == 'ortho':
+        c_out = expand_orthorhombic(c_in[0,0], c_in[1,1], c_in[2,2], c_in[3,3], c_in[4,4],
+                                    c_in[5,5], c_in[0,1], c_in[0,2], c_in[1,2])
+    else:
+        raise PytasaIOError("Symmetry expansion not supported for mode {}".format(mode))
+
+    return c_out
+
+
+def expand_isotropic(c11, c44):
+    """Return an isotropic  Cij tensor given two elastic constants"""
+    # Note: c11 is M and c44 is mu, so use build_iso
+    return build_iso(M=c11, mu=c44)[0]
 
 
 def expand_cubic(c11,c44,c12):
@@ -257,7 +326,6 @@ def build_iso(**kwargs):
         if key not in ['lam','mu','K','E','nu','M']:
             raise ValueError('keyword '+key+' not recognized')
         
-    
     if 'lam' in kwargs:
         lam = kwargs['lam']
         if 'mu' in kwargs:
@@ -310,7 +378,7 @@ def build_iso(**kwargs):
     
     M = 2*mu+lam
     E = (mu*((3*lam)+(2*mu)))/(lam+mu)
-    K = lam + (2/3)*mu
+    K = lam + (2.0/3.0)*mu
     nu = lam/(2*(lam+mu))
     
 
