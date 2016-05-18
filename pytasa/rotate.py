@@ -39,8 +39,6 @@ def rot_c(c, g):
     k[5,4] = g[0,2]*g[1,0] + g[0,0]*g[1,2]
     k[5,5] = g[0,0]*g[1,1] + g[0,1]*g[1,0]
 
-    print(k)
-
     cr = np.dot(np.dot(k, c), k.T)
 
     return cr
