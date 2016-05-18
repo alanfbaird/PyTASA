@@ -16,6 +16,7 @@ def planar_ave(this_cij):
         # no data at this point. Fill with NaN
         xi = float('nan')
         phi = float('nan')
+        vti_cij = None
 
     else:
         # Find VRH mean by rotating around X3 axis
@@ -60,7 +61,7 @@ def planar_ave(this_cij):
         phi = (vpv**2/vph**2)
         xi = (vsh**2/vsv**2)
 
-        return xi, phi, vti_cij
+    return xi, phi, vti_cij
 
 
 def vti_velocities(c, r):
