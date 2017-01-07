@@ -2,3 +2,4 @@ nose
 nbformat
 nbconvert
 jupyter
+matplotlib
