@@ -34,4 +34,5 @@ def _run_notebook(nb_path):
 
 def test_slowness_example():
     err = _run_notebook('./examples/slowness_example.ipynb')
+    print(err)
     assert err == []
