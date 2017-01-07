@@ -16,13 +16,13 @@ def _run_notebook(nb_path):
     major_version = sys.version_info[0]
     assert (major_version == 2) or (major_version == 3)
     if major_version == 2:
-        kernel_name = 'python'
+        kernel_name = 'python2'
     else:
         kernel_name = 'python3'
 
     with open(nb_path) as f:
         nb = nbformat.read(f, as_version=4)
-        ep = ExecutePreprocessor(kernel_name=kernel_name)
+        ep = ExecutePreprocessor(allow_errors=True, kernel_name=kernel_name)
         ep.preprocess(nb, {'metadata': {'path': 'examples/'}})
 
         # Check for any errors
