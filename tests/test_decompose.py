@@ -70,4 +70,13 @@ def test_olivine_norms():
                                    ol_norm_tet_and_ort, decimal=3)
     np.testing.assert_almost_equal(norms.monoclinic, ol_norm_mon, decimal=3)
     np.testing.assert_almost_equal(norms.triclinic, ol_norm_tri, decimal=3)
- 
+
+def test_olivine_decompose():
+    """Check that we get the correct decomposed elasticity for olivine"""
+    decomp = pytasa.decompose.decompose(ol_c_ref) 
+    np.testing.assert_allclose(decomp[0], ol_c_iso, atol=0.1)
+    np.testing.assert_allclose(decomp[1], ol_c_hex, atol=0.1)
+    np.testing.assert_allclose(decomp[2], ol_c_tet, atol=0.1)
+    np.testing.assert_allclose(decomp[3], ol_c_ort, atol=0.1)
+    np.testing.assert_allclose(decomp[4], ol_c_mon, atol=0.1)
+    np.testing.assert_allclose(decomp[5], ol_c_tri, atol=0.1)
