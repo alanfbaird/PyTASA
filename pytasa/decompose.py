@@ -120,7 +120,7 @@ def _x2c(x):
 
     for i in range(6):
         for j in range(6):
-		c[j,i] = c[i,j]
+            c[j,i] = c[i,j]
 
     return c
 
