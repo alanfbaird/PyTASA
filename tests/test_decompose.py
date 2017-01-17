@@ -33,27 +33,27 @@ ol_c_iso = np.array([[ 194.7,  67.3,  67.3,   0.0,   0.0,   0.0 ],
                      [   0.0,   0.0,   0.0,   0.0,  63.7,   0.0 ],
                      [   0.0,   0.0,   0.0,   0.0,   0.0,  63.7 ]])
 ol_norm_iso = 0.793
-ol_c_tet = np.array([[   3.0,  -3.0,   0.0,   0.0,   0.0,   0.0 ],
-                     [  -3.0,   3.0,   0.0,   0.0,   0.0,   0.0 ],
-                     [   0.0,   0.0,   0.0,   0.0,   0.0,   0.0 ],
-                     [   0.0,   0.0,   0.0,   0.0,   0.0,   0.0 ],
-                     [   0.0,   0.0,   0.0,   0.0,   0.0,   0.0 ],
-                     [   0.0,   0.0,   0.0,   0.0,   0.0,  -3.0 ]])
-ol_norm_tet_plus_hex = 0.055 # NB: we do not know tet and hex from the paper
 ol_c_hex = np.array([[ -21.7,   1.7,  -9.3,   0.0,   0.0,   0.0 ],
                      [   1.7, -21.7,  -9.3,   0.0,   0.0,   0.0 ],
                      [  -9.3,  -9.3,  77.3,   0.0,   0.0,   0.0 ],
                      [   0.0,   0.0,   0.0,  -2.7,   0.0,   0.0 ],
                      [   0.0,   0.0,   0.0,   0.0,  -2.7,   0.0 ],
                      [   0.0,   0.0,   0.0,   0.0,   0.0, -11.7 ]])
-# NB: we do not know tet and hex from the paper
+ol_norm_hex = 0.152 
+ol_c_tet = np.array([[   3.0,  -3.0,   0.0,   0.0,   0.0,   0.0 ],
+                     [  -3.0,   3.0,   0.0,   0.0,   0.0,   0.0 ],
+                     [   0.0,   0.0,   0.0,   0.0,   0.0,   0.0 ],
+                     [   0.0,   0.0,   0.0,   0.0,   0.0,   0.0 ],
+                     [   0.0,   0.0,   0.0,   0.0,   0.0,   0.0 ],
+                     [   0.0,   0.0,   0.0,   0.0,   0.0,  -3.0 ]])
+# NB: we do not know tet and ort from the paper (they are reported together)
 ol_c_ort = np.array([[  16.0,   0.0,   2.0,   0.0,   0.0,   0.0 ],
                      [   0.0, -16.0,  -2.0,   0.0,   0.0,   0.0 ],
                      [   2.0,  -2.0,   0.0,   0.0,   0.0,   0.0 ],
                      [   0.0,   0.0,   0.0,  -1.0,   0.0,   0.0 ],
                      [   0.0,   0.0,   0.0,   0.0,   1.0,   0.0 ],
                      [   0.0,   0.0,   0.0,   0.0,   0.0,   0.0 ]])
-ol_norm_ort = 0.152
+ol_norm_tet_and_ort = 0.055
 ol_c_mon = np.zeros((6,6))
 ol_norm_mon = 0.0
 ol_c_tri = np.zeros((6,6))
@@ -64,10 +64,10 @@ def test_olivine_norms():
        values for olivine"""
     norms = pytasa.decompose.norms(ol_c_ref, ol_c_iso, ol_c_hex, ol_c_tet,
                                    ol_c_ort, ol_c_mon, ol_c_tri)
-    np.testing.assert_almost_equal(ol_norm_iso, norms.isotropic)   
-    np.testing.assert_almost_equal(ol_norm_tet_plus_hex, norms.tetragonal +
-                                                             norms.hexagonal)   
-    np.testing.assert_almost_equal(ol_norm_ort, norms.orthorhombic)   
-    np.testing.assert_almost_equal(ol_norm_mon, norms.monoclinic)   
-    np.testing.assert_almost_equal(ol_norm_mon, norms.triclinic)   
+    np.testing.assert_almost_equal(norms.isotropic, ol_norm_iso, decimal=3)
+    np.testing.assert_almost_equal(norms.hexagonal, ol_norm_hex, decimal=3)
+    np.testing.assert_almost_equal(norms.orthorhombic + norms.tetragonal,
+                                   ol_norm_tet_and_ort, decimal=3)
+    np.testing.assert_almost_equal(norms.monoclinic, ol_norm_mon, decimal=3)
+    np.testing.assert_almost_equal(norms.triclinic, ol_norm_tri, decimal=3)
  
