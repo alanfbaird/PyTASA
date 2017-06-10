@@ -42,3 +42,44 @@ def rot_c(c, g):
     cr = np.dot(np.dot(k, c), k.T)
 
     return cr
+
+
+def rot_3(c, alpha, beta, gamma, order=None):
+    """Rotate a elastic constants matrix around the three axes.
+
+       Rotate a 6x6 numpy array representing an elastic constants matrix
+       (c) by alpha degrees about the 1-axis, beta degrees about the 2-axis,
+       and gamma degress about the 3-axies. All rotations are clockwise when
+       looking at the origin from the positive axis. The order of the rotations
+       matter and the default is to rotate about the 1-axis first, the 2-axis
+       second and the 3-axis third. Passing a three-tuple of integers to the
+       optional "order" argument can be used to change this. For example:
+
+          rot_3(c, 45, 90, 30, order=(2, 3, 1)
+
+       will result in a rotation of 90 degrees about the 2-axis, 30 degrees
+       about the 3-axis then 45 degrees about the 1-axis.
+    """
+    if order is None:
+        order = (1, 2, 3)
+
+    alpha = np.radians(alpha)
+    beta = np.radians(beta)
+    gamma = np.radians(gamma)
+
+    # Three rotation matrices - in a list so we can order them
+    # given "order"
+    r_list = [np.array([[1.0, 0.0, 0.0],
+                        [0.0, np.cos(alpha), np.sin(alpha)],
+                        [0.0, -1.0*np.sin(alpha), np.cos(alpha)]]),
+              np.array([[np.cos(beta), 0.0, -1.0*np.sin(beta)],
+                        [0.0, 1.0, 0.0],
+                        [np.sin(beta), 0.0, np.cos(beta)]]),
+              np.array([[np.cos(gamma), np.sin(gamma), 0.0],
+                        [-1.0*np.sin(gamma), np.cos(gamma), 0.0],
+                        [0.0, 0.0, 1.0]])]
+
+    rot_matrix = np.dot(np.dot(r_list[order[2]-1], r_list[order[1]-1]), 
+                        r_list[order[0]-1])
+
+    return rot_c(c, rot_matrix)
