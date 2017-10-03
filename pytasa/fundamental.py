@@ -153,24 +153,10 @@ def _rayvel(Cin,SN,rho):
 
 
 def phasevels(Cin,rh,incl,azim,vecout=False):
-    """Calculate the group velocity details for an elsticity matrix. 
-
-        Usage: 
-            VGP, VGS1, VGS2, PE, S1E, S2E = groupvels( Cin,rh,incl,azim )                    
-                Calculate group velocity vectors from elasticity matrix C (in GPa) and
-                density rh (in kg/m^3) corresponding to a phase angle defined by
-                an inclination and azimuth (both in degrees). Additionally P, S1 and
-                S2-wave polarisations are output in vector form.
+    """Calculate the phase velocity details for an elasticity matrix. 
         
-            VGP, VGS1, VGS2, PE, S1E, S2E, SNP, SNS1, SNS2, VPP, VPS1, VPS2 = 
-                                             groupvels( Cin,rh,incl,azim,slowout=True )
-                Additionally output P, S1 and S2-wave slownesses (SNP, ...) and 
-                phase velocities (VPP, ...) in vector form, as calculated by phasevels.
-        
-        
-        Notes:
-            Based on original fortran code by Mike Kendall and Sean Guest as part of ATRAK.
-            Converted to Python by Alan Baird.
+    returns: pol,avs,vs1,vs2,vp
+     (or)  : pol,avs,vs1,vs2,vp,PE,S1E,S2E,VPP,VPS1,VPS2,SNP,SNS1,SNS2
     """
     # Copy C to avoid mutating input
     C=Cin.copy()
@@ -287,7 +273,25 @@ def phasevels(Cin,rh,incl,azim,vecout=False):
 
 
 def groupvels(Cin,rh,incl,azim,slowout=False):
-    """Calculate the group velocity details for an elsticity matrix."""
+    """Calculate the group velocity details for an elasticity matrix. 
+
+        Usage: 
+            VGP, VGS1, VGS2, PE, S1E, S2E = groupvels( Cin,rh,incl,azim )                    
+                Calculate group velocity vectors from elasticity matrix C (in GPa) and
+                density rh (in kg/m^3) corresponding to a phase angle defined by
+                an inclination and azimuth (both in degrees). Additionally P, S1 and
+                S2-wave polarisations are output in vector form.
+        
+            VGP, VGS1, VGS2, PE, S1E, S2E, SNP, SNS1, SNS2, VPP, VPS1, VPS2 = 
+                                             groupvels( Cin,rh,incl,azim,slowout=True )
+                Additionally output P, S1 and S2-wave slownesses (SNP, ...) and 
+                phase velocities (VPP, ...) in vector form, as calculated by phasevels.
+        
+        
+        Notes:
+            Based on original fortran code by Mike Kendall and Sean Guest as part of ATRAK.
+            Converted to Python by Alan Baird.
+    """
 
     # copy C to avoid mutating input
     C=Cin.copy()
