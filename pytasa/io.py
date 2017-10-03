@@ -102,7 +102,7 @@ def load_ematrix(fh, eunit="Mbar"):
 
 
 @openfile
-def load_mast_simple(fh, eunit="GPa", dunit="Kgm3", dnorm=False, symmetry=None):
+def load_msat_simple(fh, eunit="GPa", dunit="Kgm3", dnorm=False, symmetry=None):
     """Load a MSAT 'simple' file
 
     This file format consists of a series of lines, each with two integers and a float,
