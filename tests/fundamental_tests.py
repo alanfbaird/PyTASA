@@ -3,11 +3,6 @@
 """
 Test the fundamental routines - based on the MSAT test cases
 """
-
-# help run this code without installation
-import sys
-sys.path.append("..")
-
 import unittest
 import numpy as np
 import numpy.testing as npt

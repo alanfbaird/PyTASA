@@ -3,11 +3,6 @@
 """
 Test the IO routines - based on the MSAT test cases
 """
-
-# help run this code without installation
-import sys
-sys.path.append("..")
-
 import unittest
 
 import numpy as np
