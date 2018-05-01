@@ -52,39 +52,39 @@ class PytasaIOTestCase(unittest.TestCase):
        np.testing.assert_almost_equal(olivine_cij_voigt, C_input)
 
     def test_load_msat_simple_file(self):
-       C_input, rho = pytasa.io.load_mast_simple(os.path.join(DATA, 
+       C_input, rho = pytasa.io.load_msat_simple(os.path.join(DATA, 
                                             "test_MS_load_default.txt"))
        np.testing.assert_almost_equal(olivine_cij_voigt, C_input)
        np.testing.assert_almost_equal(olivine_rho, rho)
 
     def test_load_msat_simple_fh(self):
        with open(os.path.join(DATA, "test_MS_load_default.txt")) as f:
-           C_input, rho = pytasa.io.load_mast_simple(f)
+           C_input, rho = pytasa.io.load_msat_simple(f)
        np.testing.assert_almost_equal(olivine_cij_voigt, C_input)
        np.testing.assert_almost_equal(olivine_rho, rho)
 
     def test_load_msat_simple_file_gz(self):
-       C_input, rho = pytasa.io.load_mast_simple(os.path.join(DATA, 
+       C_input, rho = pytasa.io.load_msat_simple(os.path.join(DATA, 
                                             "test_MS_load_default.txt.gz"))
        np.testing.assert_almost_equal(olivine_cij_voigt, C_input)
        np.testing.assert_almost_equal(olivine_rho, rho)
 
     def test_load_msat_Aij_file(self):
-       C_input, rho = pytasa.io.load_mast_simple(os.path.join(DATA, 
+       C_input, rho = pytasa.io.load_msat_simple(os.path.join(DATA, 
                                             "test_MS_load_Aij.txt"), dnorm=True,
                                             eunit="Pa")
        np.testing.assert_almost_equal(olivine_cij_voigt, C_input, decimal=3)
        np.testing.assert_almost_equal(olivine_rho, rho)
 
     def test_load_msat_iso_file(self):
-       c_input, rho = pytasa.io.load_mast_simple(os.path.join(DATA, 
+       c_input, rho = pytasa.io.load_msat_simple(os.path.join(DATA, 
                                             "test_MS_load_iso.txt"),
                                             symmetry='iso')
        np.testing.assert_almost_equal(iso_cij_voigt, c_input, decimal=3)
        np.testing.assert_almost_equal(iso_rho, rho)
 
     def test_load_msat_iso_auto_file(self):
-       c_input, rho = pytasa.io.load_mast_simple(os.path.join(DATA, 
+       c_input, rho = pytasa.io.load_msat_simple(os.path.join(DATA, 
                                             "test_MS_load_iso.txt"),
                                             symmetry='auto')
        np.testing.assert_almost_equal(iso_cij_voigt, c_input, decimal=3)
